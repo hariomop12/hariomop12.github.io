@@ -1,0 +1,108 @@
+---
+title: Node.js Error Handling Patterns
+date: "2024-01-20"
+description: Master error handling in Node.js with async/await, custom error classes, and middleware patterns.
+tags: ["Node.js", "Backend", "JavaScript"]
+published: true
+---
+
+## Why Error Handling Matters
+
+In production, errors are inevitable. What matters is how you handle them. Poor error handling leads to crashed servers, cryptic error messages, and hours of debugging.
+
+## Async/Await Error Handling
+
+The old callback pattern is dead. Embrace async/await but remember it requires proper handling:
+
+```javascript
+async function fetchUserData(userId) {
+  try {
+    const response = await fetch(`/api/users/${userId}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch user:', error.message);
+    throw error; // Re-throw for upstream handling
+  }
+}
+```
+
+## Custom Error Classes
+
+Create meaningful error types:
+
+```javascript
+class AppError extends Error {
+  constructor(message, statusCode, code) {
+    super(message);
+    this.statusCode = statusCode;
+    this.code = code;
+    this.isOperational = true;
+    
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+class NotFoundError extends AppError {
+  constructor(resource) {
+    super(`${resource} not found`, 404, 'NOT_FOUND');
+  }
+}
+
+class ValidationError extends AppError {
+  constructor(errors) {
+    super('Validation failed', 400, 'VALIDATION_ERROR');
+    this.errors = errors;
+  }
+}
+```
+
+> **Important**: Always set `isOperational = true` for expected errors. This helps distinguish them from unexpected bugs in error monitoring systems.
+
+## Express Error Middleware
+
+The last middleware in Express handles all errors:
+
+```javascript
+// Must have 4 parameters
+app.use((err, req, res, next) => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+  
+  if (process.env.NODE_ENV === 'development') {
+    return res.status(err.statusCode).json({
+      status: err.status,
+      error: err,
+      message: err.message,
+      stack: err.stack,
+    });
+  }
+  
+  // Production: don't leak error details
+  if (err.isOperational) {
+    return res.status(err.statusCode).json({
+      status: err.status,
+      message: err.message,
+    });
+  }
+  
+  // Programming or unknown errors
+  console.error('ERROR 💥', err);
+  res.status(500).json({
+    status: 'error',
+    message: 'Something went wrong',
+  });
+});
+```
+
+## The Golden Rules
+
+1. **Never swallow errors silently** - Always log or handle
+2. **Be specific** - Throw meaningful errors with context
+3. **Centralize error handling** - Don't scatter try/catch everywhere
+4. **Distinguish operational vs programming errors** - Only catch what you can handle

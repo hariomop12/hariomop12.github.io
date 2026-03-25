@@ -5,12 +5,8 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Projects from "./pages/Projects";
 import Contact from "./pages/Contact";
-
-const Blog = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <h1 className="font-display text-4xl gradient-text">Soon The OG Writeups are comming every day</h1>
-  </div>
-);
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 export default function App() {
   return (
@@ -24,6 +20,7 @@ export default function App() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
            </Routes>
         </main>
       </BrowserRouter>
