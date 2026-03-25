@@ -22,7 +22,7 @@ import { cn } from "../lib/utils";
       "Secure Cloud File Storage API | Enterprise-grade file management with JWT authentication, AWS S3 integration, PostgreSQL database, and comprehensive security features. Built with Node.js/Express.js, featuring rate limiting, email verification, Docker deployment, and Swagger documentation. ",
     tech: ["Node.js", "Express", "MySQL", "Docker"],
     github: "https://github.com/hariomop12/FileVault.git",
-    live: "",
+    live: "https://filevault-frontend-x842.onrender.com",
     status: "done",
     featured: false,
   },
