@@ -11,8 +11,8 @@ import { cn } from "../lib/utils";
       "A full-stack YouTube Music clone with audio streaming, Redis-powered job queues, Cloudflare R2 storage, and a hybrid MongoDB + MySQL backend. Built to scale.",
     tech: ["Node.js", "Express", "Redis", "Bull", "MongoDB", "MySQL", "Docker", "R2"],
     github: "https://github.com/hariomop12/YTM-Backend.git",
-    live: null,           // null = no live demo button
-    status: "wip",        // "wip" | "done"
+    live: null,            
+    status: "wip",         
     featured: true,
   },
   {
@@ -63,7 +63,7 @@ const stagger = {
 
 function SectionTag({ label }) {
   return (
-    <div className="inline-flex items-center gap-2 text-orange-500 text-xs font-medium uppercase tracking-widest mb-4">
+    <div className="inline-flex items-center gap-2 mb-4 text-xs font-medium tracking-widest text-orange-500 uppercase">
       <span className="w-6 h-px bg-orange-500" />
       {label}
     </div>
@@ -89,7 +89,7 @@ function ProjectCard({ project, index }) {
       )}
     >
       {/* Radial glow on hover */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+      <div className="absolute inset-0 transition-opacity duration-500 opacity-0 pointer-events-none group-hover:opacity-100"
         style={{
           background: "radial-gradient(400px circle at 50% 0%, rgba(249,115,22,0.06), transparent 60%)"
         }}
@@ -111,7 +111,7 @@ function ProjectCard({ project, index }) {
       </span>
 
       {/* Title */}
-      <h3 className="font-display font-extrabold text-xl text-foreground mb-3 leading-tight group-hover:text-orange-50 transition-colors duration-200">
+      <h3 className="mb-3 text-xl font-extrabold leading-tight transition-colors duration-200 font-display text-foreground group-hover:text-orange-50">
         {project.title}
       </h3>
 
@@ -184,7 +184,7 @@ export default function Projects() {
   const headerInView = useInView(headerRef, { once: true, margin: "-80px" });
 
   return (
-    <section className="max-w-6xl mx-auto px-6 py-24">
+    <section className="max-w-6xl px-6 py-24 mx-auto">
 
       {/* Header */}
       <motion.div
@@ -196,7 +196,7 @@ export default function Projects() {
       >
         <motion.div variants={fadeUp}>
           <SectionTag label="Projects" />
-          <h2 className="font-display font-extrabold text-4xl md:text-5xl leading-tight text-foreground mb-4">
+          <h2 className="mb-4 text-4xl font-extrabold leading-tight font-display md:text-5xl text-foreground">
             Things I've
             <br />
             <span className="text-foreground/20">actually built.</span>
@@ -209,7 +209,7 @@ export default function Projects() {
       </motion.div>
 
       {/* 2x2 Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         {PROJECTS.map((project, i) => (
           <ProjectCard key={project.id} project={project} index={i} />
         ))}
@@ -221,9 +221,9 @@ export default function Projects() {
         initial="hidden"
         whileInView="show"
         viewport={{ once: true }}
-        className="mt-14 text-center"
+        className="text-center mt-14"
       >
-        <p className="text-foreground/30 text-sm mb-4 font-light">
+        <p className="mb-4 text-sm font-light text-foreground/30">
           More projects on GitHub
         </p>
         <a

@@ -1,0 +1,887 @@
+---
+title: How i build production ready backend in node js
+date: "03-26-2026"
+description: A deep dive into building enterprise grade APIs with TypeScript, PostgreSQLm Prisma, and Docker.
+tags: ["Node.js", "Backend", "TypeScript", Docker]
+published: true
+---
+
+## The Why
+<br />
+Most Node.js tutorials stop at "Hello World." They don't show you how to handle real production concerns: database migrations, structured logging, graceful shutdowns, or environment parity between development and production.
+
+This guide bridges that gap. By the end, you'll have a backend architecture that can survive a traffic spike, a database failure, and a 3 AM page from your monitoring system.
+<br />
+
+## Architecture Overview
+<br />
+Nginx/ALB → Node.js (TypeScript) API → PostgreSQL (Prisma) + Redis (Cache) + Winston/Pino (Logging)
+<br />
+
+
+## TypeScript Setup That Scales
+<br />
+
+Forget ts-node in production. We're building for compile-time safety and runtime performance.
+Project Structure
+```
+src/
+├── config/          # Environment validation
+├── db/              # Prisma schema & migrations
+├── middleware/      # Auth, error handling, validation
+├── modules/         # Domain-driven modules
+│   ├── users/
+│   │   ├── users.controller.ts
+│   │   ├── users.service.ts
+│   │   ├── users.repository.ts
+│   │   └── users.routes.ts
+│   └── posts/
+├── utils/           # Logger, validators, helpers
+├── types/           # Global TypeScript definitions
+└── index.ts         # Application entry
+
+tests/
+├── integration/
+└── unit/
+
+docker/
+├── Dockerfile
+├── Dockerfile.dev
+└── docker-compose.yml
+```
+<br />
+TypeScript Configuration
+<br />
+```TypeScript
+// tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@config/*": ["src/config/*"],
+      "@modules/*": ["src/modules/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "tests"]
+}
+```
+<br />
+
+## Package Scripts
+
+```TypeScript
+{
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:generate": "prisma generate",
+    "db:seed": "tsx src/db/seed.ts",
+    "db:studio": "prisma studio",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage"
+  }
+}
+```
+<br />
+
+Key decision: tsx for development (fast, no compilation step), tsc for production (optimized, type-safe builds).
+<br />
+
+
+## Step 2: Environment Configuration with Validation
+<br />
+```TypeScript
+// src/config/env.ts
+import { z } from 'zod';
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  PORT: z.string().transform(Number).default('3000'),
+  DATABASE_URL: z.string().url(),
+  REDIS_URL: z.string().url().optional(),
+  JWT_SECRET: z.string().min(32),
+  JWT_EXPIRES_IN: z.string().default('7d'),
+  LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
+  RATE_LIMIT_WINDOW_MS: z.string().transform(Number).default('900000'),
+  RATE_LIMIT_MAX_REQUESTS: z.string().transform(Number).default('100'),
+});
+
+export type Env = z.infer<typeof envSchema>;
+
+export const env = envSchema.parse(process.env);
+
+// Fail fast on invalid config
+if (!env) {
+  throw new Error('Invalid environment configuration');
+}
+```
+<br />
+Why this matters: Your app crashes immediately on startup if DATABASE_URL is missing, not 10 requests later when someone tries to log in.
+
+<br />
+## Step 3: PostgreSQL + Prisma ORM
+
+<br />
+Prisma gives us type-safe database access, automatic migrations, and excellent introspection tools.
+
+## Schema Design
+
+```TypeScript
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // hashed with bcrypt
+  name      String?
+  role      Role     @default(USER)
+  posts     Post[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@map("users")
+}
+
+model Post {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  content     String
+  published   Boolean   @default(false)
+  authorId    String    @map("author_id")
+  author      User      @relation(fields: [authorId], references: [id])
+  tags        Tag[]
+  viewCount   Int       @default(0) @map("view_count")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([published, createdAt])
+  @@map("posts")
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  posts Post[]
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+```
+<br />
+## Database Client with Connection Pooling
+<br />
+```TypeScript
+// src/db/client.ts
+import { PrismaClient } from '@prisma/client';
+import { env } from '@/config/env.js';
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: env.NODE_ENV === 'development' 
+      ? ['query', 'error', 'warn'] 
+      : ['error'],
+  });
+
+if (env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+
+// Graceful shutdown
+process.on('beforeExit', async () => {
+  await prisma.$disconnect();
+});
+```
+
+<br/>
+
+
+## Repository Pattern Keep your database logic isolated and testable:
+<br/>
+```TypeScript
+// src/modules/users/users.repository.ts
+import { prisma } from '@/db/client.js';
+import type { Prisma, User } from '@prisma/client';
+
+export class UserRepository {
+  async findById(id: string): Promise<User | null> {
+    return prisma.user.findUnique({ where: { id } });
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return prisma.user.findUnique({ where: { email } });
+  }
+
+  async create(data: Prisma.UserCreateInput): Promise<User> {
+    return prisma.user.create({ data });
+  }
+
+  async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
+    return prisma.user.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<User> {
+    return prisma.user.delete({ where: { id } });
+  }
+
+  // Pagination with cursor-based pagination for performance
+  async findMany(params: {
+    cursor?: string;
+    take?: number;
+    skip?: number;
+    where?: Prisma.UserWhereInput;
+  }): Promise<User[]> {
+    const { cursor, take = 20, skip = 0, where } = params;
+    
+    return prisma.user.findMany({
+      take,
+      skip,
+      cursor: cursor ? { id: cursor } : undefined,
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+}
+```
+<br/>
+
+
+### Step 4: Structured Logging & Error Handling
+
+Winston Logger Configuration
+
+<br/>
+
+```TypeScript
+// src/utils/logger.ts
+import winston from 'winston';
+import { env } from '@/config/env.js';
+
+const { combine, timestamp, json, errors, printf, colorize } = winston.format;
+
+// Custom format for development
+const devFormat = printf(({ level, message, timestamp, stack, ...metadata }) => {
+  let msg = `${timestamp} [${level}]: ${message}`;
+  if (Object.keys(metadata).length > 0) {
+    msg += ` ${JSON.stringify(metadata)}`;
+  }
+  if (stack) {
+    msg += `\n${stack}`;
+  }
+  return msg;
+});
+
+export const logger = winston.createLogger({
+  level: env.LOG_LEVEL,
+  defaultMeta: { service: 'api' },
+  format: combine(
+    timestamp(),
+    errors({ stack: true }),
+    env.NODE_ENV === 'production' ? json() : combine(colorize(), devFormat)
+  ),
+  transports: [
+    new winston.transports.Console(),
+    // Add File transport for production
+    ...(env.NODE_ENV === 'production' 
+      ? [
+          new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+          new winston.transports.File({ filename: 'logs/combined.log' }),
+        ]
+      : []),
+  ],
+  // Don't exit on uncaught errors
+  exitOnError: false,
+});
+
+// Request context logger
+export const createRequestLogger = (requestId: string) => {
+  return logger.child({ requestId });
+};
+```
+
+### Global Error Handling
+
+```TypeScript
+// src/middleware/errorHandler.ts
+import type { Request, Response, NextFunction } from 'express';
+import { ZodError } from 'zod';
+import { Prisma } from '@prisma/client';
+import { logger } from '@/utils/logger.js';
+
+export class AppError extends Error {
+  constructor(
+    public statusCode: number,
+    public message: string,
+    public isOperational = true,
+    public code?: string
+  ) {
+    super(message);
+    Object.setPrototypeOf(this, AppError.prototype);
+  }
+}
+
+export const errorHandler = (
+  err: Error,
+  req: Request,
+  res: Response,
+  _next: NextFunction
+) => {
+  const requestId = req.headers['x-request-id'] as string || 'unknown';
+  const log = logger.child({ requestId, path: req.path, method: req.method });
+
+  // Handle known error types
+  if (err instanceof AppError) {
+    log.warn({ err, statusCode: err.statusCode }, 'Operational error');
+    return res.status(err.statusCode).json({
+      success: false,
+      error: {
+        message: err.message,
+        code: err.code,
+      },
+    });
+  }
+
+  if (err instanceof ZodError) {
+    log.warn({ errors: err.errors }, 'Validation error');
+    return res.status(400).json({
+      success: false,
+      error: {
+        message: 'Validation failed',
+        details: err.errors.map(e => ({
+          path: e.path.join('.'),
+          message: e.message,
+        })),
+      },
+    });
+  }
+
+  // Prisma errors
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    log.error({ code: err.code, meta: err.meta }, 'Database error');
+    
+    if (err.code === 'P2002') {
+      return res.status(409).json({
+        success: false,
+        error: { message: 'Resource already exists' },
+      });
+    }
+    
+    if (err.code === 'P2025') {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Resource not found' },
+      });
+    }
+  }
+
+  // Unknown errors - don't leak details
+  log.error({ err }, 'Unexpected error');
+  
+  return res.status(500).json({
+    success: false,
+    error: {
+      message: env.NODE_ENV === 'production' 
+        ? 'Internal server error' 
+        : err.message,
+    },
+  });
+};
+
+```
+
+
+### Step 5: Express App Setup
+
+```TypeScript
+// src/app.ts
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import compression from 'compression';
+import { v4 as uuidv4 } from 'uuid';
+
+import { env } from '@/config/env.js';
+import { errorHandler } from '@/middleware/errorHandler.js';
+import { requestLogger } from '@/middleware/requestLogger.js';
+import { healthRouter } from '@/modules/health/health.routes.js';
+import { userRouter } from '@/modules/users/users.routes.js';
+
+const app = express();
+
+// Security middleware
+app.use(helmet());
+app.use(cors({
+  origin: env.NODE_ENV === 'production' 
+    ? ['https://yourdomain.com'] 
+    : '*',
+  credentials: true,
+}));
+
+// Rate limiting
+app.use(rateLimit({
+  windowMs: env.RATE_LIMIT_WINDOW_MS,
+  max: env.RATE_LIMIT_MAX_REQUESTS,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: { message: 'Too many requests, please try again later' },
+    });
+  },
+}));
+
+// Request ID for tracing
+app.use((req, res, next) => {
+  req.id = req.headers['x-request-id'] as string || uuidv4();
+  res.setHeader('X-Request-Id', req.id);
+  next();
+});
+
+// Body parsing & compression
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(compression());
+
+// Logging
+app.use(requestLogger);
+
+// Health check (before auth)
+app.use('/health', healthRouter);
+
+// API routes
+app.use('/api/v1/users', userRouter);
+app.use('/api/v1/posts', postRouter);
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: { message: 'Route not found' },
+  });
+});
+
+// Global error handler
+app.use(errorHandler);
+
+export { app };
+
+```
+
+```TypeScript
+// src/index.ts
+import { app } from './app.js';
+import { env } from '@/config/env.js';
+import { logger } from '@/utils/logger.js';
+import { prisma } from '@/db/client.js';
+
+const server = app.listen(env.PORT, () => {
+  logger.info(`Server running on port ${env.PORT} in ${env.NODE_ENV} mode`);
+});
+
+// Graceful shutdown
+const gracefulShutdown = async (signal: string) => {
+  logger.info(`${signal} received. Starting graceful shutdown...`);
+  
+  server.close(async () => {
+    logger.info('HTTP server closed');
+    
+    await prisma.$disconnect();
+    logger.info('Database connections closed');
+    
+    process.exit(0);
+  });
+
+  // Force shutdown after 30s
+  setTimeout(() => {
+    logger.error('Forced shutdown');
+    process.exit(1);
+  }, 30000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  logger.fatal({ err }, 'Uncaught exception');
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.fatal({ reason }, 'Unhandled rejection');
+  process.exit(1);
+});
+```
+
+<br/>
+
+### Step 6: Docker Configuration
+<br />
+Multi-stage Dockerfile
+<br />
+
+```Dockerfile
+# docker/Dockerfile
+# Stage 1: Dependencies
+FROM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat openssl
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci --only=production
+
+# Stage 2: Builder
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+COPY . .
+RUN npm run db:generate
+RUN npm run build
+
+# Stage 3: Runner
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nodejs
+
+# Copy only necessary files
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package.json ./package.json
+
+# Generate Prisma client for production
+RUN npx prisma generate
+
+USER nodejs
+
+EXPOSE 3000
+
+ENV PORT=3000
+
+CMD ["node", "dist/index.js"]
+
+```Dockerfile
+
+
+# docker-compose.yml
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/app?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev-secret-change-in-production
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: npm run dev
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Adminer for database management (dev only)
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
+  redis_data:
+```
+<br/>
+Production Docker Compose
+
+```Dockerfile
+
+# docker-compose.prod.yml
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - LOG_LEVEL=info
+    depends_on:
+      - db
+      - redis
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    command: 
+      - "postgres"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=2GB"
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
+
+```
+
+<br/>
+Step 7: Health Checks & Monitoring
+<br />
+```TypeScript
+// src/modules/health/health.controller.ts
+import { prisma } from '@/db/client.js';
+import { logger } from '@/utils/logger.js';
+import type { Request, Response } from 'express';
+
+export const healthController = {
+  async liveness(req: Request, res: Response) {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  },
+
+  async readiness(req: Request, res: Response) {
+    const checks = {
+      database: false,
+      // redis: false, // Add if using Redis
+    };
+
+    try {
+      // Database check
+      await prisma.$queryRaw`SELECT 1`;
+      checks.database = true;
+    } catch (error) {
+      logger.error({ error }, 'Database health check failed');
+    }
+
+    const isHealthy = Object.values(checks).every(Boolean);
+
+    res.status(isHealthy ? 200 : 503).json({
+      status: isHealthy ? 'ready' : 'not ready',
+      checks,
+      timestamp: new Date().toISOString(),
+    });
+  },
+
+  async metrics(req: Request, res: Response) {
+    // Basic metrics - replace with Prometheus in production
+    const metrics = {
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      cpu: process.cpuUsage(),
+      timestamp: Date.now(),
+    };
+
+    res.json(metrics);
+  },
+};
+```
+
+<br />
+<br />
+## Production Checklist
+
+Before deploying:
+<br />
+<br />
+
+- [ ] **Security**<br />
+  - Helmet<br />
+  - CORS<br />
+  - Rate limiting<br />
+  - Input validation<br /><br />
+
+- [ ] **Database**<br />
+  - Migrations run automatically<br />
+  - Connection pooling configured<br /><br />
+
+- [ ] **Logging**<br />
+  - Structured JSON logs<br />
+  - Correlation IDs<br />
+  - No sensitive data in logs<br /><br />
+
+- [ ] **Error Handling**<br />
+  - Operational vs programming errors clearly distinguished<br /><br />
+
+- [ ] **Health Checks**<br />
+  - Liveness probe configured<br />
+  - Readiness probe configured<br /><br />
+
+- [ ] **Graceful Shutdown**<br />
+  - 30s timeout<br />
+  - Connections drained properly<br /><br />
+
+- [ ] **Environment**<br />
+  - All secrets stored in environment variables<br />
+  - Validation on startup<br /><br />
+
+- [ ] **Monitoring**<br />
+  - Metrics endpoint exposed<br />
+  - Alerting rules configured
+ 
+ <br />
+<br />
+ <div className="overflow-x-auto">
+
+<table className="w-full border border-gray-700 text-sm">
+  <thead className="bg-gray-900">
+    <tr>
+      <th className="border px-4 py-2">Feature</th>
+      <th className="border px-4 py-2">Implementation</th>
+      <th className="border px-4 py-2">Benefit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="border px-4 py-2 font-semibold">Type Safety</td>
+      <td className="border px-4 py-2">TypeScript + Zod + Prisma</td>
+      <td className="border px-4 py-2">Catch errors at compile time and runtime</td>
+    </tr>
+    <tr>
+      <td className="border px-4 py-2 font-semibold">Database</td>
+      <td className="border px-4 py-2">PostgreSQL + Prisma</td>
+      <td className="border px-4 py-2">ACID compliance, type-safe queries, easy migrations</td>
+    </tr>
+    <tr>
+      <td className="border px-4 py-2 font-semibold">Dev/Prod Parity</td>
+      <td className="border px-4 py-2">Docker Compose</td>
+      <td className="border px-4 py-2">Works on my machine → Works in production</td>
+    </tr>
+    <tr>
+      <td className="border px-4 py-2 font-semibold">Observability</td>
+      <td className="border px-4 py-2">Winston + Request IDs</td>
+      <td className="border px-4 py-2">Debug production issues in minutes, not hours</td>
+    </tr>
+    <tr>
+      <td className="border px-4 py-2 font-semibold">Scalability</td>
+      <td className="border px-4 py-2">Stateless design, connection pooling</td>
+      <td className="border px-4 py-2">Horizontal scaling ready</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+
+<br/>
+<br/>
+This backend architecture has been battle-tested in production environments handling millions of requests. The combination of TypeScript's type safety, Prisma's developer experience, and Docker's consistency creates a foundation you can build serious products on.
