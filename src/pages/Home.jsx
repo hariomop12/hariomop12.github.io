@@ -21,7 +21,7 @@ export default function Home() {
 
           <p className="text-lg text-foreground/60 leading-relaxed max-w-xl mb-8">
             Hey, I'm{" "}
-            <span className="text-foreground font-medium">Hariom</span> — I
+            <span className="text-foreground font-medium">Hariom</span>. I
             build the backend that keeps apps running: APIs, queues, and the
             infrastructure nobody notices until it breaks.
           </p>
