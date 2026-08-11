@@ -1,0 +1,27 @@
+backend:
+  name: git-gateway
+  branch: main
+  base_url: https://myspaceop.netlify.app
+
+media_folder: public/images/blog
+public_folder: /images/blog
+
+collections:
+  - name: blogs
+    label: Blogs
+    label_singular: Blog
+    folder: src/content/blogs
+    create: true
+    extension: mdx
+    format: frontmatter
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Date, name: date, widget: datetime, format: "YYYY-MM-DD", time_format: false }
+      - { label: Short description, name: description, widget: text }
+      - label: Tags
+        name: tags
+        widget: list
+        field: { label: Tag, name: tag, widget: string }
+      - { label: Publish this blog, name: published, widget: boolean, default: true }
+      - { label: Blog content, name: body, widget: markdown }
