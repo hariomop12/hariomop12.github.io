@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   build:
@@ -38,3 +39,8 @@ jobs:
           fi
           git commit -m "Build resume.pdf from LaTeX"
           git push
+
+      - name: Trigger site deploy
+        run: gh workflow run "Deploy GitHub Pages" --repo $GITHUB_REPOSITORY
+        env:
+          GH_TOKEN: ${{ github.token }}
