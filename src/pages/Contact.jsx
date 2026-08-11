@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Mail, MapPin, Clock, Code2, Globe, Terminal, Download, Send } from "lucide-react";
+import { Mail, MapPin, Clock, Download, Send } from "lucide-react";
+import { GitHubIcon, LinkedInIcon, LeetCodeIcon } from "../components/SocialIcons";
 import { cn } from "../lib/utils";
 
 const CONTACT_INFO = [
@@ -9,10 +10,10 @@ const CONTACT_INFO = [
 ];
 
 const SOCIALS = [
-  { icon: Code2,    label: "GitHub",   href: "https://github.com/hariomop12" },
-  { icon: Globe,    label: "LinkedIn", href: "https://www.linkedin.com/in/hariom-op/" },
-  { icon: Terminal, label: "LeetCode", href: "https://leetcode.com/hariomtanu" },
-  { icon: Download, label: "Resume",   href: "https://docs.google.com/document/d/1B8bfqh7CUGF1GqRW4PNIF4aWhyXh5VgbYQ3droF-zEA/edit?usp=sharing" },
+  { icon: GitHubIcon,   label: "GitHub",   href: "https://github.com/hariomop12", hover: "hover:text-[#e8e4da]" },
+  { icon: LinkedInIcon, label: "LinkedIn", href: "https://www.linkedin.com/in/hariom-op/", hover: "hover:text-[#0A66C2]" },
+  { icon: LeetCodeIcon, label: "LeetCode", href: "https://leetcode.com/hariomtanu", hover: "hover:text-[#FFA116]" },
+  { icon: Download,     label: "Resume",   href: "https://docs.google.com/document/d/1B8bfqh7CUGF1GqRW4PNIF4aWhyXh5VgbYQ3droF-zEA/edit?usp=sharing", hover: "hover:text-primary" },
 ];
 
 const inputClasses =
@@ -92,9 +93,9 @@ export default function Contact() {
                   target="_blank"
                   rel="noopener noreferrer"
                   title={s.label}
-                  className="w-10 h-10 rounded-md flex items-center justify-center text-foreground/50 hover:text-primary border border-border hover:border-primary transition-colors"
+                  className={`w-10 h-10 rounded-md flex items-center justify-center text-foreground/70 border border-border hover:border-primary transition-colors ${s.hover}`}
                 >
-                  <s.icon size={16} />
+                  <s.icon size={18} />
                 </a>
               ))}
             </div>

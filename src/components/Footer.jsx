@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { Code2, Globe, Terminal } from "lucide-react";
 import { counterGet } from "../lib/counter";
+import { GitHubIcon, LinkedInIcon, LeetCodeIcon } from "./SocialIcons";
 
 const VISITS_KEY = "site-visits-counted";
 
 const SOCIALS = [
-  { icon: Code2,    label: "GitHub",   href: "https://github.com/hariomop12" },
-  { icon: Globe,    label: "LinkedIn", href: "https://www.linkedin.com/in/hariom-op/" },
-  { icon: Terminal, label: "LeetCode", href: "https://leetcode.com/hariomtanu" },
+  { icon: GitHubIcon,   label: "GitHub",   href: "https://github.com/hariomop12", hover: "hover:text-[#e8e4da]" },
+  { icon: LinkedInIcon, label: "LinkedIn", href: "https://www.linkedin.com/in/hariom-op/", hover: "hover:text-[#0A66C2]" },
+  { icon: LeetCodeIcon, label: "LeetCode", href: "https://leetcode.com/hariomtanu", hover: "hover:text-[#FFA116]" },
 ];
 
 export default function Footer() {
@@ -53,9 +53,9 @@ export default function Footer() {
               rel="noopener noreferrer"
               title={s.label}
               aria-label={s.label}
-              className="w-9 h-9 rounded-md flex items-center justify-center text-foreground/50 hover:text-primary border border-border hover:border-primary transition-colors"
+              className={`w-10 h-10 rounded-md flex items-center justify-center text-foreground/70 border border-border hover:border-primary transition-colors ${s.hover}`}
             >
-              <s.icon size={15} />
+              <s.icon size={19} />
             </a>
           ))}
         </div>
