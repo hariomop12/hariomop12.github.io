@@ -2,8 +2,6 @@ backend:
   name: github
   repo: hariomop12/hariomop12.github.io
   branch: main
-  base_url: https://api.netlify.com
-  client_id: Ov23liEeFT1x4PpZngtO
 
 media_folder: public/images/blog
 public_folder: /images/blog
