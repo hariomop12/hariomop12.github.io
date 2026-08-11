@@ -13,4 +13,5 @@ export const SONGS = [
   { id: "7uSj-x6EIUE", title: "Dilbar (From \"Satyameva Jayate\")" },
   { id: "5Wa4OUUXf3A", title: "Whistle Baja" },
   { id: "D_DGB6-gYRU", title: "Nachde Ne Saare" },
+  { id: "Gayw5AQvWcQ", title: "Shararat (From \"Dhurandhar\")" },
 ];
