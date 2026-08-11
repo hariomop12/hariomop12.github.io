@@ -1,0 +1,40 @@
+name: Build Resume PDF
+
+on:
+  push:
+    paths:
+      - "resume/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compile LaTeX
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex
+          working_directory: resume
+          packages: fontawesome5
+
+      - name: Copy PDF into public
+        run: cp resume/main.pdf public/resume.pdf
+
+      - name: Commit and push PDF
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/resume.pdf
+          if git diff --cached --quiet; then
+            echo "No PDF change, skipping commit"
+            exit 0
+          fi
+          git commit -m "Build resume.pdf from LaTeX"
+          git push

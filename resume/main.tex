@@ -1,0 +1,99 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage{url}
+\usepackage{parskip}
+\RequirePackage{color}
+\RequirePackage{graphicx}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage[scale=0.9, top=0.5cm, bottom=0.5cm]{geometry}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{fontawesome5}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\usepackage{supertabular}
+\newlength{\fullcollw}
+\setlength{\fullcollw}{0.47\textwidth}
+\usepackage{titlesec}
+\usepackage{multicol}
+\usepackage{multirow}
+\titleformat{\section}{\Large\scshape\raggedright}{}{0em}{}[\titlerule]
+\titlespacing{\section}{0pt}{4pt}{4pt}
+\usepackage[unicode, draft=false]{hyperref}
+\definecolor{linkcolour}{rgb}{0,0.2,0.6}
+\hypersetup{colorlinks,breaklinks,urlcolor=linkcolour,linkcolor=linkcolour}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\begin{tabularx}{\linewidth}{@{} C @{}}
+\Huge{Hariom Virkhare}\\[4pt]
+\href{https://github.com/hariomop12}{\raisebox{-0.05\height}\faGithub\ hariomop12} \ $|$ \
+\href{https://www.linkedin.com/in/hariom-op/}{\raisebox{-0.05\height}\faLinkedin\ hariom-op} \ $|$ \
+\href{https://leetcode.com/u/hariomtanu/}{\raisebox{-0.05\height}\faCode\ LeetCode} \ $|$ \
+\href{mailto:hariomvirkhare02@gmail.com}{\raisebox{-0.05\height}\faEnvelope\ hariomvirkhare02@gmail.com} \ $|$ \
+\href{tel:+916261598793}{\raisebox{-0.05\height}\faMobile\ +91-6261598793}
+\end{tabularx}
+
+\section{Summary}
+\vspace{-1pt}
+Backend Software Engineer specializing in Go with hands-on experience designing, developing, and maintaining scalable backend systems, REST APIs, microservices, and production-grade distributed services. Proficient in PostgreSQL, Redis, Docker, and Linux with strong fundamentals in system design, concurrency, performance optimization, and debugging. Passionate about writing clean, efficient, and maintainable code with a focus on reliability and scalability.
+
+\section{Technical Skills}
+\vspace{-1pt}
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\textbf{Programming:} & \normalsize{Go, JavaScript, TypeScript, Java, SQL, Bash} \\
+\textbf{Backend:} & \normalsize{Go (Gin, Chi), Node.js, Express.js, REST APIs, Web Services, JWT, WebSockets} \\
+\textbf{Frontend:} & \normalsize{React.js, TypeScript, HTML, CSS, Tailwind CSS} \\
+\textbf{Database:} & \normalsize{PostgreSQL, Redis, MongoDB, SQLite} \\
+\textbf{DevOps \& Tools:} & \normalsize{Docker, Git, GitHub Actions, Linux, AWS} \\
+\textbf{Concepts:} & \normalsize{Concurrency, Goroutines, Channels, Microservices, Distributed Systems, Scalability, Performance Optimization, System Design, Authentication, Clean Code} \\
+\textbf{CS Fundamentals:} & \normalsize{Data Structures, Algorithms, OOP, Operating Systems, DBMS, Computer Networks} \\
+\end{tabularx}
+
+\section{Projects}
+\vspace{-1pt}
+
+\begin{tabularx}{\linewidth}{@{}X@{}}
+
+\textbf{ClearRouter -- Scalable Backend Gateway} \hfill \href{https://clearrouter.vercel.app}{\small\faExternalLink*\ Live} \ $|$ \ \href{https://github.com/hariomop12/ClearRouter}{\small\faGithub\ GitHub}\\
+\textnormal{Go, Gin, PostgreSQL, Redis, Docker, GitHub Actions, React.js, TypeScript} \\[1pt]
+\hangindent=0.9em \small{-- Designed and developed scalable backend services in Go using Gin, building a modular gateway with REST APIs integrating multiple LLM providers (OpenAI, Anthropic, Gemini, DeepSeek, Mistral).} \\
+\hangindent=0.9em \small{-- Implemented JWT authentication, credit-based usage system, API key management, and Razorpay webhook processing with clean, maintainable, and well-documented Go code.} \\
+\hangindent=0.9em \small{-- Architected PostgreSQL schema for users, transactions, and API usage analytics; optimized queries for performance and scalability under concurrent load.} \\
+\hangindent=0.9em \small{-- Containerized backend services using Docker Compose with separate dev and production configurations; automated testing, builds, and deployment via GitHub Actions CI/CD.} \\[4pt]
+
+\textbf{ChatHub -- Real-Time Distributed Messaging Backend} \hfill \href{https://chat.hariomop.in}{\small\faExternalLink*\ Live} \ $|$ \ \href{https://github.com/hariomop12/Chathub}{\small\faGithub\ GitHub}\\
+\textnormal{Go, Chi, PostgreSQL, WebSocket, WebRTC, Docker, GitHub Actions} \\[1pt]
+\hangindent=0.9em \small{-- Built scalable real-time backend services in Go using Chi and WebSockets, supporting high-concurrency direct and group messaging with PostgreSQL persistence.} \\
+\hangindent=0.9em \small{-- Designed concurrent connection management using goroutines and channels with Gorilla WebSocket for efficient message routing and memory optimization.} \\
+\hangindent=0.9em \small{-- Integrated WebRTC for peer-to-peer voice and video calls and Cloudflare R2 for secure in-chat file sharing; implemented JWT-based auth with webhook-driven user sync.} \\
+\hangindent=0.9em \small{-- Deployed via Docker with GitHub Actions CI/CD, ensuring reliable, scalable, and optimized backend service delivery.} \\[4pt]
+
+\textbf{FileVault -- Secure Cloud Storage Backend} \hfill \href{https://filevault.hariomop.in/}{\small\faExternalLink*\ Live} \ $|$ \ \href{https://github.com/hariomop12/FileVault}{\small\faGithub\ GitHub}\\
+\textnormal{Node.js, Express.js, PostgreSQL, Cloudflare R2, React.js} \\[1pt]
+\hangindent=0.9em \small{-- Developed secure backend services with Node.js and Express.js, implementing REST APIs for file storage integrated with Cloudflare R2 (S3-compatible) object storage.} \\
+\hangindent=0.9em \small{-- Designed PostgreSQL schema for users, files, audit logs, and permissions; implemented Bcrypt-hashed JWT authentication and role-based access control.} \\
+\hangindent=0.9em \small{-- Built expiry-based shareable links, anonymous uploads, rate limiting, and Helmet.js security headers for production-grade reliability and data protection.} \\
+\hangindent=0.9em \small{-- Optimized file upload/download flows using presigned URLs with edge CDN integration for improved performance and scalability.} \\
+
+\end{tabularx}
+
+\section{Education}
+\vspace{-1pt}
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+2022 -- 2026 & \textbf{Bachelor of Technology (CSE)}, UIT Barkatullah University, Bhopal \hfill \normalsize (GPA: 7.46 / 10) \\[2pt]
+2021 -- 2022 & Class 12th, Govt. Excellence HSS, Pandhurna \hfill \normalsize (71\%) \\[2pt]
+2019 -- 2020 & Class 10th, Govt. Excellence HSS, Pandhurna \hfill \normalsize (85\%) \\
+\end{tabularx}
+
+\section{Extracurricular \& Certifications}
+\begin{itemize}[leftmargin=*]
+\item Built and deployed multiple backend systems using Go with REST APIs, Docker, PostgreSQL, authentication, and scalable service architecture.
+\item Active Linux user with hands-on experience in Docker containerization, self-hosting, GitHub Actions automation, and backend deployment.
+\item Solved 90+ Data Structures and Algorithms problems on \href{https://leetcode.com/u/hariomtanu/}{LeetCode}, demonstrating strong problem-solving and analytical skills.
+\item Postman API Fundamentals Student Expert.
+\end{itemize}
+\vfill
+
+\end{document}
