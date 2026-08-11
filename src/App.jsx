@@ -3,7 +3,6 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import VisitorPanel from "./components/VisitorPanel";
-import MusicPlayer from "./components/MusicPlayer";
 import RouteMeta from "./components/RouteMeta";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -31,7 +30,6 @@ export default function App() {
           </main>
           <Footer />
           <VisitorPanel />
-          <MusicPlayer />
         </div>
       </BrowserRouter>
     </ThemeProvider>
