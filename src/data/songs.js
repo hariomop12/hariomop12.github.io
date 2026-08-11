@@ -1,0 +1,16 @@
+export const SONGS = [
+  { id: "3T8nIOZmx50", title: "Aashiq Banaya Aapne" },
+  { id: "-uqZlkSoEZU", title: "Baby Doll" },
+  { id: "mFdIMZk6UHI", title: "Tere Liye (Jhankar)" },
+  { id: "AWCifvH9fXQ", title: "SHEILA KI JAWANI" },
+  { id: "QCc6Vo8_gKU", title: "Fevicol Se" },
+  { id: "cgDe9D4BQTk", title: "Bom Diggy Diggy (From \"Sonu Ke Titu Ki Sweety\")" },
+  { id: "_5GBgrIaRX4", title: "O Soniya" },
+  { id: "JPfoLgd3uKg", title: "Sheesha (Aakhya Mai Aakh Ghali Jo Bairan)" },
+  { id: "5c3a9A0A1pg", title: "Sau Tarah Ke" },
+  { id: "4mtOjjmKDyE", title: "Do Ghoont" },
+  { id: "P4UnrmPFPA4", title: "Naal Nachna (From \"Dhurandhar\")" },
+  { id: "7uSj-x6EIUE", title: "Dilbar (From \"Satyameva Jayate\")" },
+  { id: "5Wa4OUUXf3A", title: "Whistle Baja" },
+  { id: "D_DGB6-gYRU", title: "Nachde Ne Saare" },
+];
