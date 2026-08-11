@@ -77,7 +77,7 @@ export default function VisitorPanel() {
   ].filter((r) => r.value);
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 w-64 rounded-lg border border-border bg-card/95 shadow-lg">
+    <div className="fixed right-4 z-40 w-64 top-20 md:top-auto md:bottom-4 rounded-lg border border-border bg-card/95 shadow-lg">
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium"
