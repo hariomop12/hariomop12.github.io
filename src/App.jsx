@@ -3,6 +3,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import VisitorPanel from "./components/VisitorPanel";
+import RouteMeta from "./components/RouteMeta";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Projects from "./pages/Projects";
@@ -14,6 +15,7 @@ export default function App() {
   return (
     <ThemeProvider defaultTheme="dark">
       <BrowserRouter>
+        <RouteMeta />
         <div className="min-h-screen flex flex-col">
           <Navbar />
           <main className="pt-20 flex-1">

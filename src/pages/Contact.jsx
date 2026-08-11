@@ -1,17 +1,18 @@
 import { useState } from "react";
-import { Mail, MapPin, Clock, Code2, Globe, Download, Send } from "lucide-react";
+import { Mail, MapPin, Clock, Code2, Globe, Terminal, Download, Send } from "lucide-react";
 import { cn } from "../lib/utils";
 
 const CONTACT_INFO = [
-  { icon: Mail,   label: "Email",         value: "hariomvirkhare02@email.com", href: "mailto:hariomvirkhare02@gmail.com" },
+  { icon: Mail,   label: "Email",         value: "hariomvirkhare02@gmail.com", href: "mailto:hariomvirkhare02@gmail.com" },
   { icon: MapPin, label: "Location",      value: "Bhopal, India",     href: null },
   { icon: Clock,  label: "Response Time", value: "Within 24 hours",   href: null },
 ];
 
 const SOCIALS = [
   { icon: Code2,    label: "GitHub",   href: "https://github.com/hariomop12" },
-  { icon: Globe,    label: "LinkedIn", href: "https://linkedin.com/in/hariom-op" },
-  { icon: Download, label: "Resume",   href: "https://docs.google.com/document/d/1B8bfqh7CUGF1GqRW4PNIF4aWhyXh5VgbYQ3droF-zEA/edit?usp=sharingz" },
+  { icon: Globe,    label: "LinkedIn", href: "https://www.linkedin.com/in/hariom-op/" },
+  { icon: Terminal, label: "LeetCode", href: "https://leetcode.com/hariomtanu" },
+  { icon: Download, label: "Resume",   href: "https://docs.google.com/document/d/1B8bfqh7CUGF1GqRW4PNIF4aWhyXh5VgbYQ3droF-zEA/edit?usp=sharing" },
 ];
 
 const inputClasses =
@@ -185,8 +186,8 @@ export default function Contact() {
           {status === "error" && (
             <p className="text-xs text-red-300/80 text-center mt-3">
               Something went wrong. Email me directly at{" "}
-              <a href="mailto:hariomvirkhare02@email.com" className="underline">
-                hariomvirkhare02@email.com
+              <a href="mailto:hariomvirkhare02@gmail.com" className="underline">
+                hariomvirkhare02@gmail.com
               </a>
             </p>
           )}

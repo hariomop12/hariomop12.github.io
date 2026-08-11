@@ -122,7 +122,7 @@ export default function About() {
           <div className="space-y-4 text-foreground/65 leading-relaxed text-[15px]">
             <p>
               I'm{" "}
-              <span className="text-foreground font-medium">Hariom</span>, a
+              <span className="text-foreground font-medium">Hariom Virkhare</span>, a
               backend developer from{" "}
               <span className="text-primary font-medium">Bhopal, India</span>{" "}
               — currently deep in the world of distributed systems,
