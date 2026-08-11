@@ -112,12 +112,12 @@ export default function MusicPlayer() {
   const pct = progress.duration ? (progress.current / progress.duration) * 100 : 0;
 
   return (
-    <div className="fixed bottom-4 left-4 z-40 w-72 rounded-lg border border-border bg-card/95 shadow-lg overflow-hidden">
+    <div className="fixed bottom-4 left-4 z-40 w-72 rounded-xl border border-border bg-card shadow-xl overflow-hidden">
       <div id="yt-music-player" className="pointer-events-none absolute w-0 h-0 opacity-0" />
 
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium"
+        className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium bg-secondary/50"
       >
         <span className="flex items-center gap-2">
           <Music size={14} className="text-primary" />
