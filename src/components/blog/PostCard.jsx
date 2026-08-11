@@ -1,45 +1,33 @@
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { Calendar, ArrowRight } from 'lucide-react'
 import { format } from 'date-fns'
-import { cn } from '../../lib/utils'
 
-export default function PostCard({ post, index = 0 }) {
+export default function PostCard({ post }) {
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-    >
+    <article>
       <Link
         to={`/blog/${post.slug}`}
-        className={cn(
-          'group block p-6 rounded-2xl border border-border/50',
-          'bg-foreground/[0.02] hover:bg-foreground/[0.04]',
-          'hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/5',
-          'transition-all duration-300'
-        )}
+        className="group block p-6 rounded-lg border border-border bg-secondary/40 hover:border-primary transition-colors"
       >
         <div className="flex items-start justify-between gap-4 mb-3">
-          <div className="flex items-center gap-3 text-xs text-foreground/40">
+          <div className="flex items-center gap-3 text-xs text-foreground/50">
             <span className="flex items-center gap-1.5">
               <Calendar size={12} />
               {format(post.date, 'MMM d, yyyy')}
             </span>
-
           </div>
           <ArrowRight
             size={16}
-            className="flex-shrink-0 mt-1 transition-all duration-300 text-foreground/30 group-hover:text-orange-400 group-hover:translate-x-1"
+            className="flex-shrink-0 mt-1 text-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all"
           />
         </div>
 
-        <h3 className="mb-2 text-xl font-bold transition-colors font-display text-foreground group-hover:text-orange-400">
+        <h3 className="mb-2 text-xl font-bold text-foreground group-hover:text-primary transition-colors">
           {post.title}
         </h3>
 
         {post.description && (
-          <p className="mb-4 text-sm leading-relaxed text-foreground/55 line-clamp-2">
+          <p className="mb-4 text-sm leading-relaxed text-foreground/60 line-clamp-2">
             {post.description}
           </p>
         )}
@@ -49,7 +37,7 @@ export default function PostCard({ post, index = 0 }) {
             {post.tags.map((tag) => (
               <span
                 key={tag}
-                className="px-2.5 py-1 text-xs font-mono rounded-md bg-orange-500/10 text-orange-400/80 border border-orange-500/20"
+                className="px-2 py-1 text-xs rounded bg-secondary text-primary"
               >
                 {tag}
               </span>
@@ -57,6 +45,6 @@ export default function PostCard({ post, index = 0 }) {
           </div>
         )}
       </Link>
-    </motion.article>
+    </article>
   )
 }

@@ -1,9 +1,7 @@
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
 import { Code2, ExternalLink } from "lucide-react";
 import { cn } from "../lib/utils";
 
- const PROJECTS = [
+const PROJECTS = [
   {
     id: "01",
     title: "SoundWave",
@@ -11,140 +9,79 @@ import { cn } from "../lib/utils";
       "A full-stack YouTube Music clone with audio streaming, Redis-powered job queues, Cloudflare R2 storage, and a hybrid MongoDB + MySQL backend. Built to scale.",
     tech: ["Node.js", "Express", "Redis", "Bull", "MongoDB", "MySQL", "Docker", "R2"],
     github: "https://github.com/hariomop12/YTM-Backend.git",
-    live: null,            
-    status: "wip",         
-    featured: true,
+    live: null,
+    status: "wip",
   },
   {
     id: "02",
     title: "File Vault",
     description:
-      "Secure Cloud File Storage API | Enterprise-grade file management with JWT authentication, AWS S3 integration, PostgreSQL database, and comprehensive security features. Built with Node.js/Express.js, featuring rate limiting, email verification, Docker deployment, and Swagger documentation. ",
+      "Secure Cloud File Storage API — enterprise-grade file management with JWT authentication, AWS S3 integration, PostgreSQL, rate limiting, email verification, Docker deployment, and Swagger docs.",
     tech: ["Node.js", "Express", "MySQL", "Docker"],
     github: "https://github.com/hariomop12/FileVault.git",
     live: "https://filevault-frontend-x842.onrender.com",
     status: "done",
-    featured: false,
   },
   {
     id: "03",
     title: "ClearRouter",
     description:
-      "A Getway For LLM Just Like Open Router",
+      "A gateway for LLMs, just like Open Router.",
     tech: ["Go", "Gin", "PostgreSQL", "Redis"],
     github: "https://github.com/hariomop12/ClearRouter.git",
     live: null,
     status: "done",
-    featured: false,
   },
   {
     id: "04",
     title: "LinkCraft",
     description:
-      "Link Shortner Just like bitly",
+      "Link shortener just like bitly.",
     tech: ["Node.js", "MongoDB", "JWT", "AWS"],
     github: "https://github.com/hariomop12/LinkCraft.git",
     live: null,
     status: "done",
-    featured: false,
   },
 ];
-// ─────────────────────────────────────────────────────
 
-// Framer variants
-const fadeUp = {
-  hidden: { opacity: 0, y: 32 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] } },
-};
-const stagger = {
-  hidden: {},
-  show:   { transition: { staggerChildren: 0.12 } },
-};
-
-function SectionTag({ label }) {
+function ProjectCard({ project }) {
   return (
-    <div className="inline-flex items-center gap-2 mb-4 text-xs font-medium tracking-widest text-orange-500 uppercase">
-      <span className="w-6 h-px bg-orange-500" />
-      {label}
-    </div>
-  );
-}
-
-function ProjectCard({ project, index }) {
-  const ref    = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-
-  return (
-    <motion.div
-      ref={ref}
-      variants={fadeUp}
-      initial="hidden"
-      animate={inView ? "show" : "hidden"}
-      transition={{ delay: (index % 2) * 0.1 }}
-      className={cn(
-        "relative flex flex-col p-7 rounded-2xl border transition-all duration-300 group overflow-hidden",
-        project.featured
-          ? "border-orange-500/20 bg-orange-500/[0.04]"
-          : "border-border/60 bg-foreground/[0.02] hover:border-orange-500/20 hover:bg-orange-500/[0.03]"
-      )}
-    >
-      {/* Radial glow on hover */}
-      <div className="absolute inset-0 transition-opacity duration-500 opacity-0 pointer-events-none group-hover:opacity-100"
-        style={{
-          background: "radial-gradient(400px circle at 50% 0%, rgba(249,115,22,0.06), transparent 60%)"
-        }}
-      />
-
-      {/* Featured badge */}
-      {project.featured && (
-        <div className="inline-flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full px-3 py-1 w-fit mb-5">
-          <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
-          <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest">
-            Featured
-          </span>
-        </div>
-      )}
-
-      {/* Number */}
-      <span className="font-mono text-[11px] text-foreground/20 font-medium mb-3">
+    <div className="flex flex-col p-6 rounded-lg border border-border bg-secondary/40">
+      <span className="font-mono text-[11px] text-foreground/40 mb-2">
         {project.id}
       </span>
 
-      {/* Title */}
-      <h3 className="mb-3 text-xl font-extrabold leading-tight transition-colors duration-200 font-display text-foreground group-hover:text-orange-50">
-        {project.title}
-      </h3>
+      {project.status === "wip" && (
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-primary mb-3 w-fit">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+          In progress
+        </span>
+      )}
 
-      {/* Description */}
-      <p className="text-[13px] text-foreground/45 leading-relaxed font-light mb-5 flex-1">
+      <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+
+      <p className="text-sm text-foreground/55 leading-relaxed mb-5 flex-1">
         {project.description}
       </p>
 
-      {/* Tech pills */}
       <div className="flex flex-wrap gap-1.5 mb-6">
         {project.tech.map((t) => (
           <span
             key={t}
-            className="px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-foreground/[0.05] border border-foreground/[0.07] text-foreground/45"
+            className="px-2 py-1 rounded text-[11px] font-mono bg-secondary text-foreground/60"
           >
             {t}
           </span>
         ))}
       </div>
 
-      {/* Links */}
-      <div className="flex items-center gap-3 pt-5 border-t border-border/40">
+      <div className="flex items-center gap-3 pt-4 border-t border-border">
         {project.github && (
           <a
             href={project.github}
             target="_blank"
             rel="noopener noreferrer"
-            className={cn(
-              "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium",
-              "bg-foreground/[0.05] border border-foreground/[0.08] text-foreground/55",
-              "hover:bg-foreground/[0.09] hover:text-foreground/80 hover:border-foreground/[0.14]",
-              "transition-all duration-200"
-            )}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded text-xs text-foreground/70 hover:text-foreground border border-border hover:border-primary transition-colors"
           >
             <Code2 size={13} />
             GitHub
@@ -157,92 +94,49 @@ function ProjectCard({ project, index }) {
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
-              "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium",
-              "bg-orange-500/10 border border-orange-500/20 text-orange-400",
-              "hover:bg-orange-500/20 hover:border-orange-500/40",
-              "transition-all duration-200"
+              "inline-flex items-center gap-2 px-3 py-1.5 rounded text-xs text-primary hover:text-orange-300 border border-primary/40 transition-colors"
             )}
           >
             <ExternalLink size={13} />
             Live Demo
           </a>
         )}
-
-        {project.status === "wip" && !project.live && (
-          <div className="inline-flex items-center gap-1.5 text-[11px] font-mono text-foreground/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-            In progress
-          </div>
-        )}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 export default function Projects() {
-  const headerRef    = useRef(null);
-  const headerInView = useInView(headerRef, { once: true, margin: "-80px" });
-
   return (
-    <section className="max-w-6xl px-6 py-24 mx-auto">
+    <section className="max-w-5xl px-6 py-20 mx-auto">
+      <h2 className="text-3xl md:text-4xl font-bold leading-tight mb-4">
+        Things I've actually built.
+      </h2>
+      <p className="text-foreground/55 text-[15px] leading-relaxed max-w-lg mb-12">
+        A mix of side projects and practice builds — each one taught me
+        something new about backend engineering.
+      </p>
 
-      {/* Header */}
-      <motion.div
-        ref={headerRef}
-        variants={stagger}
-        initial="hidden"
-        animate={headerInView ? "show" : "hidden"}
-        className="mb-14"
-      >
-        <motion.div variants={fadeUp}>
-          <SectionTag label="Projects" />
-          <h2 className="mb-4 text-4xl font-extrabold leading-tight font-display md:text-5xl text-foreground">
-            Things I've
-            <br />
-            <span className="text-foreground/20">actually built.</span>
-          </h2>
-          <p className="text-foreground/40 text-[15px] font-light leading-relaxed max-w-lg">
-            A mix of side projects and practice builds — each one taught me
-            something new about backend engineering.
-          </p>
-        </motion.div>
-      </motion.div>
-
-      {/* 2x2 Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        {PROJECTS.map((project, i) => (
-          <ProjectCard key={project.id} project={project} index={i} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {PROJECTS.map((project) => (
+          <ProjectCard key={project.id} project={project} />
         ))}
       </div>
 
-      {/* Bottom CTA */}
-      <motion.div
-        variants={fadeUp}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-        className="text-center mt-14"
-      >
-        <p className="mb-4 text-sm font-light text-foreground/30">
+      <div className="text-center mt-14">
+        <p className="mb-4 text-sm text-foreground/50">
           More projects on GitHub
         </p>
         <a
           href="https://github.com/hariomop12"
           target="_blank"
           rel="noopener noreferrer"
-          className={cn(
-            "inline-flex items-center gap-2 px-6 py-3 rounded-xl",
-            "border border-border/60 text-foreground/50 text-sm font-medium",
-            "hover:border-orange-500/30 hover:text-orange-400 hover:bg-orange-500/[0.04]",
-            "transition-all duration-200"
-          )}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-border text-foreground/70 hover:text-foreground hover:border-primary transition-colors text-sm"
         >
           <Code2 size={15} />
           View GitHub Profile
         </a>
-      </motion.div>
-
+      </div>
     </section>
   );
 }
- 

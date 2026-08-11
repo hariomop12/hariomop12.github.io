@@ -1,172 +1,51 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer base {
-  :root {
-    /* Light Mode — Orange Theme */
-    --background:        0 0% 98%;
-    --foreground:        20 10% 8%;
-
-    --card:              0 0% 100%;
-    --card-foreground:   20 10% 8%;
-
-    --primary:           24 95% 53%;     /* orange-500 */
-    --primary-foreground: 0 0% 100%;
-
-    --secondary:         24 30% 94%;
-    --secondary-foreground: 24 95% 30%;
-
-    --muted:             24 20% 93%;
-    --muted-foreground:  24 10% 45%;
-
-    --accent:            24 95% 53%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive:       0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border:            24 20% 88%;
-    --input:             24 20% 88%;
-    --ring:              24 95% 53%;
-
-    --radius: 0.6rem;
-  }
-
-  .dark {
-    /* Dark Mode — Orange Theme */
-    --background:        20 10% 5%;
-    --foreground:        24 20% 95%;
-
-    --card:              20 10% 8%;
-    --card-foreground:   24 20% 95%;
-
-    --primary:           24 95% 53%;     /* orange-500 — same in both */
-    --primary-foreground: 0 0% 100%;
-
-    --secondary:         20 10% 12%;
-    --secondary-foreground: 24 80% 70%;
-
-    --muted:             20 10% 12%;
-    --muted-foreground:  24 10% 55%;
-
-    --accent:            20 10% 14%;
-    --accent-foreground: 24 95% 60%;
-
-    --destructive:       0 70% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border:            20 10% 14%;
-    --input:             20 10% 14%;
-    --ring:              24 95% 53%;
-  }
-}
 
 @layer base {
   * {
     @apply border-border;
   }
 
-  body {
-    @apply font-sans bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+  html {
     scroll-behavior: smooth;
   }
 
+  body {
+    background: #3b372e;
+    color: #eee9d8;
+    font-family: Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
+    font-family: Arial, Helvetica, sans-serif;
   }
 
   code, pre {
-    @apply font-mono;
+    font-family: "JetBrains Mono", monospace;
   }
 
-  /* Custom scrollbar */
+  ::selection {
+    background: #b9aa84;
+    color: #3b372e;
+  }
+
   ::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
   }
+
   ::-webkit-scrollbar-track {
-    @apply bg-background;
+    background: #3b372e;
   }
+
   ::-webkit-scrollbar-thumb {
-    @apply bg-orange-500 rounded-full;
+    background: #b9aa84;
+    border-radius: 999px;
   }
+
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-orange-600;
+    background: #ded1b3;
   }
-}
-
-@layer utilities {
-  /* Orange glow effect */
-  .glow-orange {
-    box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
-  }
-  .glow-orange-strong {
-    box-shadow: 0 0 40px rgba(249, 115, 22, 0.5);
-  }
-
-  /* Gradient text */
-  .gradient-text {
-    @apply text-transparent bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text;
-  }
-
-  /* Glass effect */
-  .glass {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    @apply border bg-background/70 border-border;
-  }
-
-  /* Orange underline animation */
-  .nav-link {
-    @apply relative transition-colors duration-200 text-foreground/70 hover:text-orange-500;
-  }
-  .nav-link::after {
-    content: '';
-    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 transition-all duration-300 rounded-full;
-  }
-  .nav-link:hover::after,
-  .nav-link.active::after {
-    @apply w-full;
-  }
-  .nav-link.active {
-    @apply text-orange-500;
-  }
-}
-
-/* globals.css */
-[data-rehype-pretty-code-figure] {
-  margin: 1.5rem 0;
-  overflow: hidden;
-  border-radius: 16px;
-  border: 1px solid rgb(255 255 255 / 0.08);
-  background: #0f172a;
-}
-
-[data-rehype-pretty-code-figure] pre {
-  overflow-x: auto;
-  padding: 1rem 1.25rem;
-  font-size: 0.9rem;
-  line-height: 1.7;
-}
-
-[data-rehype-pretty-code-title] {
-  padding: 0.75rem 1rem;
-  font-size: 0.8rem;
-  border-bottom: 1px solid rgb(255 255 255 / 0.08);
-  color: rgb(203 213 225);
-}
-
-[data-highlighted-line] {
-  background: rgb(255 255 255 / 0.06);
-  display: block;
-  margin: 0 -1.25rem;
-  padding: 0 1.25rem;
-}
-
-[data-highlighted-chars] {
-  border-radius: 0.25rem;
-  background: rgb(255 255 255 / 0.12);
 }
