@@ -8,34 +8,34 @@ export default {
   theme: {
     extend: {
       colors: {
-        border: "rgba(232, 228, 218, 0.14)",
-        input: "rgba(232, 228, 218, 0.14)",
-        ring: "rgba(232, 228, 218, 0.4)",
-        background: "#3b372e",
-        foreground: "#e8e4da",
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
         primary: {
-          DEFAULT: "#e8e4da",
-          foreground: "#2d2a24",
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
         },
         secondary: {
-          DEFAULT: "#444037",
-          foreground: "#e8e4da",
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
         },
         destructive: {
-          DEFAULT: "#d66a5a",
-          foreground: "#fff",
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
         },
         muted: {
-          DEFAULT: "#413d34",
-          foreground: "rgba(232, 228, 218, 0.55)",
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
         },
         accent: {
-          DEFAULT: "#444037",
-          foreground: "#e8e4da",
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
         },
         card: {
-          DEFAULT: "#413d34",
-          foreground: "#e8e4da",
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
         },
         orange: {
           50:  "#f7f5ef",
