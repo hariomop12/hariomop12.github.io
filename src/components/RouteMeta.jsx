@@ -3,27 +3,27 @@ import { useLocation } from "react-router-dom";
 
 const PAGE_META = {
   "/": {
-    title: "Hariom Virkhare — Backend Developer",
+    title: "Hariom Backend Developer",
     description:
-      "Hariom Virkhare — backend developer building production-grade APIs, queues, and infrastructure.",
+      "Hariom Virkhare backend developer building production-grade APIs, queues, and infrastructure.",
   },
   "/about": {
-    title: "About — Hariom Virkhare",
+    title: "About Hariom",
     description:
       "Learn about Hariom Virkhare, a backend developer focused on APIs, databases, and infrastructure.",
   },
   "/projects": {
-    title: "Projects — Hariom Virkhare",
+    title: "Projects  Hariom",
     description:
       "A collection of backend projects by Hariom Virkhare: APIs, services, and infrastructure tooling.",
   },
   "/blog": {
-    title: "Blog — Hariom Virkhare",
+    title: "Blog — Hariom",
     description:
       "Blog posts on backend engineering by Hariom Virkhare — Node.js, Go, Docker, Kubernetes, and more.",
   },
   "/contact": {
-    title: "Contact — Hariom Virkhare",
+    title: "Contact  Hariom",
     description:
       "Get in touch with Hariom Virkhare for projects, roles, or backend engineering questions.",
   },
