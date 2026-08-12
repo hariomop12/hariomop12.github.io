@@ -1,0 +1,99 @@
+---
+title: From Curiosity to Go-Storm Why I Built My Own HTTP Load Tester
+date: 2026-08-12
+description: It all started with a simple curiosity how much load can i actually generate using Go's goroutines and channels? I started experimenting with it, and that small experiment slowly turned into Go-Storm an HTTP load testing tool
+tags:
+  - Go
+  - Load Testing
+  - Concurrency
+  - Distributed Systems
+published: true
+---
+
+## 1 it started with curiosity
+
+bas ek simple curiosity thi **go ki goroutines aur channels se actually kitna load generate kar sakte hain?**
+mann tha server ko high load deke dekhun ki kya hota hai. 😂😁
+
+## 2 i didn't really have a big plan
+
+honestly, mere paas starting mein koi bada product idea nahi tha
+
+bas socha
+
+**“ek load tester bana ke dekhte hain.”**
+
+kuch banaya, phir usme aur cheezein add karne ka mann hua aur project dheere dheere bada hota gaya
+
+## 3 the first version was simple
+
+starting mein kaam bahut simple tha
+
+**http requests bhejo → multiple goroutines use karo → responses dekho**
+
+bas itna hi
+
+lekin jab actual mein run kiya, tab concurrency ko practically samajhne ka alag hi maza aaya.
+
+## 4 then the questions started
+
+phir naye questions aane lage:
+
+- ek machine kitna load generate kar sakti hai?
+- concurrency aur request rate mein difference kya hai?
+- server load hone par latency kaise change hoti hai?
+- p95 aur p99 kya actually tell karte hain?
+- agar worker fail ho jaye toh?
+- agar test ko beech mein stop karna ho toh?
+
+aur har question ke saath project mein kuch naya add hota gaya.
+
+## 5 go became the perfect playground
+
+go ki **goroutines, channels, worker pools aur concurrency** ko sirf padhne ke bajay, go-storm ke through practically use karne ka chance mila.
+
+yahi project mere liye go concurrency ko samajhne ka ek practical playground ban gaya.
+
+## 6 from request generator to load testing tool
+
+jo initially simple http request generator tha, woh gradually proper load testing tool banne laga.
+
+concurrency control → rate limiting → metrics → graceful shutdown → better reporting...
+
+har feature ke saath project thoda aur useful hota gaya.
+
+## 7 the moment one machine wasn't enough
+
+phir ek interesting problem saamne aayi:
+
+**“agar mujhe aur zyada load generate karna hai toh?”**
+
+ek point ke baad problem server ki nahi, **meri machine ki** hone lagti hai.
+
+aur yahin se distributed load testing ka idea aaya.
+
+**ye story next blog mein.**
+
+## 8 what go-storm looks like today
+
+aaj go-storm kaafi evolve ho chuka hai.
+
+ab ye sirf http requests bhejne wala small experiment nahi hai. isme load generation, concurrency control, rate limiting, performance metrics aur distributed testing jaise concepts aa chuke hain.
+
+## 9 why i'm still building it
+
+main go-storm ko k6 ka replacement banane ke intention se nahi bana raha.
+
+main bas ye samajhna chahta hoon:
+
+> **“jab hum kisi system ko uski limit tak push karte hain, toh actually andar kya hota hai?”**
+
+aur go-storm mere liye us question ko explore karne ka ek way ban gaya.
+
+## 10 what's next?
+
+next part mein baat karenge:
+
+> **why one machine isn't enough for load testing**
+
+aur yahin se go-storm ki distributed journey start hoti hai.
