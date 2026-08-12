@@ -15,6 +15,7 @@ export default defineConfig({
           keepBackground: false,
         }],
       ],
+      providerImportSource: '@mdx-js/react',
     }),
     react(),
   ],
