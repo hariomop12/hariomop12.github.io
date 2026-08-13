@@ -58,7 +58,7 @@ const INFO = [
   { icon: Monitor,  label: "Focus",              value: "Backend & DevOps" },
   { icon: Clock,    label: "Experience",         value: "Fresher / Early Career" },
   { icon: Code2,    label: "Currently Studying", value: "Kubernetes Storage" },
-  { icon: Phone,    label: "Open To",            value: "Full-time • Bhopal / Indore / Remote" },
+  { icon: Phone,    label: "Open To",            value: "Full-time" },
 ];
 
 const SKILL_CATEGORIES = [
