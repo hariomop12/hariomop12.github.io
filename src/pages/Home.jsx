@@ -6,7 +6,7 @@ const STATS = [
   { num: "5+",   label: "Tech Stacks" },
 ];
 
-const STACK = ["Go", "Node.js", "Docker", "Kubernetes", "MySQL", "MongoDB", "Redis", "AWS"];
+const STACK = ["Go", "PostgreSQL", "Redis", "gRPC", "Docker", "Kubernetes", "AWS"];
 
 export default function Home() {
   return (
