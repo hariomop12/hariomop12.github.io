@@ -14,4 +14,7 @@ export const SONGS = [
   { id: "5Wa4OUUXf3A", title: "Whistle Baja" },
   { id: "D_DGB6-gYRU", title: "Nachde Ne Saare" },
   { id: "Gayw5AQvWcQ", title: "Shararat (From \"Dhurandhar\")" },
+  { id: "51ltCZopReM", title: "Aa Toh Sahi" },
+  { id: "qhmcMuq2Gfs", title: "Naam Chale" },
+  { id: "geHlQWu70qY", title: "Sajna, Say Yes To The Dress" },
 ];
