@@ -4,22 +4,22 @@ import { cn } from "../lib/utils";
 const PROJECTS = [
   {
     id: "01",
-    title: "SoundWave",
+    title: "Go-Storm",
     description:
-      "A full-stack YouTube Music clone with audio streaming, Redis-powered job queues, Cloudflare R2 storage, and a hybrid MongoDB + MySQL backend. Built to scale.",
-    tech: ["Node.js", "Express", "Redis", "Bull", "MongoDB", "MySQL", "Docker", "R2"],
-    github: "https://github.com/hariomop12/YTM-Backend.git",
+      "High-performance HTTP load testing in Go — local & distributed. Built to actually understand concurrency, worker pools, and rate limiting by pushing systems to their limit.",
+    tech: ["Go", "gRPC", "Docker"],
+    github: "https://github.com/hariomop12/go-storm",
     live: null,
     status: "wip",
   },
   {
     id: "02",
-    title: "File Vault",
+    title: "Chathub",
     description:
-      "Secure Cloud File Storage API — enterprise-grade file management with JWT authentication, AWS S3 integration, PostgreSQL, rate limiting, email verification, Docker deployment, and Swagger docs.",
-    tech: ["Node.js", "Express", "MySQL", "Docker"],
-    github: "https://github.com/hariomop12/FileVault.git",
-    live: "https://filevault-frontend-x842.onrender.com",
+      "A modern real-time chat app with instant messaging, voice/video calls, file sharing, and secure authentication.",
+    tech: ["JavaScript", "Go", "Docker"],
+    github: "https://github.com/hariomop12/Chathub",
+    live: null,
     status: "done",
   },
   {
@@ -34,12 +34,12 @@ const PROJECTS = [
   },
   {
     id: "04",
-    title: "LinkCraft",
+    title: "File Vault",
     description:
-      "Link shortener just like bitly.",
-    tech: ["Node.js", "MongoDB", "JWT", "AWS"],
-    github: "https://github.com/hariomop12/LinkCraft.git",
-    live: null,
+      "Secure Cloud File Storage API — enterprise-grade file management with JWT authentication, AWS S3 integration, PostgreSQL, rate limiting, email verification, Docker deployment, and Swagger docs.",
+    tech: ["Node.js", "Express", "MySQL", "Docker"],
+    github: "https://github.com/hariomop12/FileVault.git",
+    live: "https://filevault-frontend-x842.onrender.com",
     status: "done",
   },
 ];
