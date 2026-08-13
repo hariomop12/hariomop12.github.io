@@ -54,7 +54,7 @@ function InfoCard({ icon: Icon, label, value }) {
 }
 
 const INFO = [
-  { icon: MapPin,   label: "Location",           value: "Bhopal, India" },
+  { icon: MapPin,   label: "Location",           value: "Internet" },
   { icon: Monitor,  label: "Focus",              value: "Backend & DevOps" },
   { icon: Clock,    label: "Experience",         value: "Fresher / Early Career" },
   { icon: Code2,    label: "Currently Studying", value: "Kubernetes Storage" },
@@ -123,30 +123,25 @@ export default function About() {
             <p>
               I'm{" "}
               <span className="text-foreground font-medium">Hariom Virkhare</span>, a
-              backend developer from{" "}
-              <span className="text-primary font-medium">Bhopal, India</span>{" "}
-              — currently deep in the world of distributed systems,
-              containerization, and building APIs that don't fall apart under
+              backend developer focused on Go, distributed systems, and scalable
+              backend architecture.
+            </p>
+            <p>
+              I enjoy building systems that are simple on the surface but have
+              interesting engineering underneath: concurrency, APIs, caching,
+              queues, databases, networking, and everything that makes backend
+              software reliable, fault tolerant, and resilient under real world
               load.
             </p>
             <p>
-              My stack lives entirely on the server side. I think in{" "}
-              <span className="text-foreground">Node.js</span>, dream in{" "}
-              <span className="text-foreground">Docker containers</span>, and
-              spend weekends chasing Kubernetes configs on{" "}
-              <span className="text-foreground">Arch Linux</span>.
-            </p>
-            <p>
-              Currently building{" "}
-              <span className="text-primary font-medium">SoundWave</span> — a
-              full-stack YouTube Music clone with Redis queues, Cloudflare R2,
-              and a MongoDB + MySQL hybrid backend.
+              Currently exploring deeper into distributed systems, cloud
+              infrastructure, and high performance backend engineering.
             </p>
 
             <div className="mt-6 pl-4 border-l-2 border-primary/40">
               <p className="text-foreground/50 text-sm italic">
-                "Code that works at 3am in production is the only code worth
-                writing."
+                "Build things that are simple to use, hard to break, and ready
+                to scale."
               </p>
             </div>
           </div>
