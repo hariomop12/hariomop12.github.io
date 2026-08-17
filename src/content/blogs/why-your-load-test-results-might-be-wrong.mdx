@@ -1,0 +1,313 @@
+---
+title: Why Your Load Test Results Might Be Wrong
+date: 2026-08-17
+description: Load test ka result hamesha target server ki reality nahi batata kabhi kabhi load generator khud bottleneck ban chuka hota hai ess blog mein dekho kaise go storm CPU, GC, goroutines, FD usage aur actual RPS track karke misleading test results detect karta hai
+tags:
+  - '#testing'
+  - '#go'
+published: true
+---
+
+## (And How go-storm Detects It)
+
+Socho tumne Friday evening ek load test chalaya.
+
+Command simple tha:
+
+`storm run -u `[`https://api.example.com/orders`](https://api.example.com/orders)` -n 600000 -c 500 -r 10000`
+
+Dashboard par result aaya: latency 2.8 seconds, error rate 12%, achieved throughput around 6,800 RPS. Team ka immediate conclusion hota hai: _"API 10K RPS handle nahi kar pa rahi."_
+
+Lekin ek uncomfortable sawaal hai kya API sach mein slow thi? Ya load-generator machine hi pehle haar gayi thi?
+
+Load testing mein target ko test karna obvious hai. Generator ko test karna often bhool jaate hain. Aur wahi chhota sa blind spot ek convincing-looking, but completely misleading performance report bana sakta hai.
+
+go-storm ka focus sirf requests bhejna nahi hai. Iska focus yeh jaanna bhi hai ki jo load tumne **maanga** tha, kya generator ne waqai woh load **produce** kiya aur karte waqt uski health kaisi thi.
+
+***
+
+## 1. The Problem galat results kaise milte hain
+
+Ek load test number tab useful hota hai jab yeh teen baatein true hon
+
+1. Requested workload actually generate hua ho.
+2. Measurement boundaries correct hon request start se response complete tak.
+3. Generator khud bottleneck na ban gaya ho.
+
+Teesra point sabse zyada ignore hota hai.
+
+Tum **-r 10000** specify karte ho. Iska matlab intent hai 10,000 requests per second. Lekin agar local machine CPU pe 98% par hai, GC baar-baar pause kar raha hai, sockets/FDs limit ke paas hain, ya workers scheduling ke liye fight kar rahe hain, to actual request stream irregular ho sakti hai.
+
+Result mein latency badh sakti hai. But us latency ka poora blame server ko dena galat hoga. Generator ke scheduling delays, client-side queues, connection creation pressure, aur resource starvation bhi observed numbers ko contaminate kar sakte hain.
+
+```plain
+Requested workload                 What actually happened
+10,000 RPS  ───────────────►  generator hit 98% CPU
+                                      │
+                                      ▼
+                                only 6,800 RPS emitted
+                                      │
+                                      ▼
+                         server receives a different workload
+                                      │
+                                      ▼
+                     report says "server is slow" (maybe wrong)
+```
+
+Yahan important distinction hai:
+
+- **Target saturation:** server/database/downstream dependency capacity ke beyond chala gaya
+- **Generator saturation:** load bhejne wali machine requested traffic reliably create nahi kar pa rahi
+
+Pehle case mein test ka finding valuable hai. Doosre case mein finding incomplete hai, aur kabhi kabhi invalid bhi.
+
+***
+
+## 2. Real story machine saturated hai user ko pata nahi
+
+Ek realistic incident dekho.
+
+Tanu ko checkout API ko 8000 RPS par test karna tha. Laptop powerful tha, test local network se run ho raha tha aur initial runs perfectly normal lage. Jaise hi concurrency badhi, p99 latency 180 ms se seedha 2.4s ho gayi. Error rate bhi badhne laga.
+
+Slack par message gaya: “Checkout service collapses after 8K RPS.”
+
+Problem yeh thi ki Tanu ne sirf target ke graphs dekhe. Generator ke nahi.
+
+Machine par kya ho raha tha?
+
+- CPU almost fully busy tha.
+- Runtime ka GC allocation pressure clean karne mein time le raha tha.
+- Hundreds of client connections aur file descriptors active the.
+- Requested 8,000 RPS ke badle generator 5,900 RPS hi achieve kar pa raha tha.
+
+Server ko 8K RPS mila hi nahi. Team ne server capacity nahi, laptop capacity measure ki 😂🥲.
+
+Yeh kisi beginner ki mistake nahi hai Mature teams mein bhi hota hai especially jab “the tool finished successfully” ko “the test is valid” maan liya jaata hai. Successful exit code correctness ka proof nahi hota.
+
+go storm ka health report is ambiguity ko visible banata hai final result ke saath generator ka verdict bhi aata hai healthy under pressure ya saturated
+
+***
+
+## 3. 7 bottlenecks generator kahaan ruk sakta hai
+
+Load generator bottleneck ek single metric nahi hota Yeh usually multiple signals ka combination hota hai
+
+| Bottleneck | Kya hota hai | Result par effect |
+| --- | --- | --- |
+| CPU | Request creation, TLS, parsing, scheduling ke liye cores busy | Requested RPS miss, timing jitter |
+| Memory | Heap/system memory growth | GC pressure, paging risk, instability |
+| GC | Go runtime pause/collection pressure | Request scheduling aur response handling late |
+| Goroutines | Excessive runnable/blocked goroutines | Scheduler contention, leak ka signal |
+| Network | NIC bandwidth ephemeral ports DNS/TLS packet loss | Target ko intended traffic nahi milta |
+| File descriptors | Open sockets ki OS limit | New connections fail mysterious client errors |
+| Locks | Shared queues/counters/maps ke around contention | Throughput plateaus despite more concurrency |
+
+### CPU: sirf “machine busy” nahi
+
+CPU 100% hone par har request drop nahi hoti More dangerous problem yeh hai ki request timings drift karte hain. Rate limiter ka intent steady flow ho sakta hai, but scheduler ko time hi nahi mil raha. Burst, gaps aur uneven arrival pattern server behaviour ko change kar dete hain.
+
+### Memory aur GC silent feedback loop
+
+High allocation rate se heap grow hota hai. Heap grow hota hai to GC ka kaam badhta hai. GC pressure badhta hai to workers ko less CPU time milta hai. Workers slow hue to queues grow ho sakti hain. Phir memory aur badh sakti hai. Yeh feedback loop gradually test ko unreliable bana deta hai.
+
+### Goroutines cheap hain free nahi
+
+Go goroutines lightweight hain lekin infinite nahi. Bahut zyada goroutines ka matlab more stacks, more scheduling work, aur often koi hidden lifecycle bug. A healthy worker pool test mein goroutine count concurrency se reasonably related rehna chahiye not wildly explode.
+
+### Network aur locks important but context matters
+
+Network saturation aur lock contention generator ke performance ko affect kar sakte hain Lekin current GoStorm health report inhe directly measure nahi karti Ye problems ka effect **RPS achievement** aur **worker utilization** ke through indirectly detect hota hai
+
+***
+
+## 4. How gostorm detects it realtime monitoring architecture
+
+gostorm test run ke saath ek lightweight background monitor start karta hai Local run mein default sampling interval one second hai monitor test ke end par cleanly stop hota hai aur final health report build hoti hai
+
+```plain
+                       ┌──────────────────────────────┐
+                         │          LOAD TEST         │
+                         │                           │
+                         │  Producer → Workers →       │
+                         │             Collector      │
+                         └──────────────┬───────────────┘
+                                       │
+                    ┌─────────────────--──┼───────────────---────┐
+                    │                   │                   │
+                    ▼                   ▼                   ▼
+          ┌─────────────────┐  ┌─────────────────┐    ┌────────────────┐
+          │ Runtime /      │  │ Test Statistics │    │   OS Limits   │
+          │ Process        │  │               │    │              │
+          │               │  │ Target RPS     │    │ Open FDs      │
+          │ • CPU          │  │ vs Achieved RPS│    │ Max FDs       │
+          │ • Heap         │  │               │    │              │
+          │ • GC           │  │ Worker Usage   │    │              │
+          │ • Goroutines    │  │               │    │              │
+          │ • FDs          │  │               │    │              │
+          └────────┬────────┘   └-────────┬───────┘   └─-─────┬────────┘
+                  │                    │                  │
+                  └──────────────────────────────────────------┘
+                                       │
+                                       ▼
+                         ┌──────────────────────-────┐
+                         │   THRESHOLD EVALUATOR    │
+                         │                        │
+                         │     OK / WARN / CRITICAL │
+                         └─────────────┬──────-──────┘
+                                       │
+                                       ▼
+                         ┌────────────────────────-──┐
+                         │  GENERATOR HEALTH REPORT │
+                         │                        │
+                         │  Actionable bottleneck   │
+                         │  & health information    │
+                         └──────────────────────────┘
+```
+
+1. **CPU usage** Linux mein process kitna CPU use kar raha hai, ye \*\*`/proc/self/stat`\*\* se measure hota hai.
+2. **Memory growth rate** Time ke saath memory kitni fast badh rahi hai, ye check karke excessive memory usage ka signal milta hai.
+3. **GC pause** Go ka Garbage Collector kitna time program ko pause kar raha hai, ye runtime ke GC data se measure hota hai.
+4. **Goroutine count** Kitni goroutines chal rahi hain, ye runtime se count karke configured concurrency ke comparison mein check hota hai.
+5. **File descriptor usage** Linux mein kitne file descriptors use ho rahe hain, ye \*\*`/proc/self/fd`\*\* aur OS ki maximum FD limit ke comparison se check hota hai.
+6. **RPS achievement** Actual RPS target RPS ke kitna close hai, ye check kiya jaata hai.
+7. **Worker utilization** Workers available time ka kitna part requests handle karne mein busy rahe, iska estimate nikala jaata hai.
+
+Default policy deliberately simple aur explainable hai CPU 85% par warning 95% par critical FD usage 80% par warning aur 95% par critical; achieved RPS target ke 90% se neeche warning aur 70% ya neeche critical Thresholds library API se customize bhi kiye ja sakte hain
+
+By default monitoring test ke end mein health verdict deta hai CLI mein **--saturation-kill** flag bhi available hai; production workflow mein iska natural purpose critical saturation par automatic stop hona hai Agar us behaviour ko rely karna hai apne installed version mein verify karna important hai flag ka hona aur cancellation path ka actually enforce hona dono same baat nahi hain
+
+Idea punishment nahi honesty hai Agar generator incapable hai tool ko signal dena chahiye not silently pretend that requested test happened
+
+***
+
+## 5. Capacity estimation test se pehle machine ki limit pata karo
+
+Best time to discover that one laptop cannot generate desired load is **before** the production like test not after an incident review
+
+`--estimate` go storm ko ek short pre test benchmark chalane bolta hai It samples a small high concurrency workload and reports estimated maximum RPS average latency success rate CPU memory, goroutines, aur GC cycles observed during that check
+
+`storm run `\
+`         -u https://staging.example.com/checkout  `\
+`         -n 300000 -c 300 -r 10000  `\
+`        --estimate`
+
+`CAPACITY ESTIMATION REPORT`
+
+`Quick Benchmark Results`
+`  Sample Size:       200 requests`
+`  Max RPS:           7,400`
+`  Avg Latency:       41ms`
+`  Success Rate:      100.0%`
+
+`System at Load`
+`  CPU:               88.2%`
+`  Memory:            322.5 MB`
+`  Goroutines:        307`
+`  GC Cycles:         9`
+
+`  Target: 10,000 RPS  ❌ NOT ACHIEVABLE`
+`  (Your machine can handle ~7,400 RPS)`
+
+`  Recommendation:`
+`  • Use distributed mode: storm run-dist --agents 2`
+`  • Or reduce target: storm run -n 6660`
+
+Is output ko exact universal hardware benchmark mat samjho Target latency, TLS, payload size, response body, network path aur test configuration capacity change kar dete hain. Treat it as a practical pre flight signal: “is setup par yeh target risky hai kya?”
+
+```plain
+Before test
+   │
+   ├── Capacity estimate healthy ──► run single generator with confidence
+   │
+   └── Capacity estimate tight/not achievable
+              │
+              ├── lower target RPS
+              ├── tune concurrency / payload / connections
+              └── distribute load across agents
+```
+
+***
+
+## 6. Live demo health report ko kaise read karein
+
+Test ke end par normal result ke baad health report print hoti hai when saturation monitoring enabled hai (default enabled)
+
+`GENERATOR HEALTH REPORT`
+
+`Load`
+`  Target RPS:       10,000`
+`  Achieved RPS:     6,820  🔴 (68%)`
+
+`System Resources`
+`  CPU Usage:        97.1% 🔴`
+`  Memory:           844.6 MB (Heap: 516.2 MB)`
+`  Goroutines:       5,142`
+`  GC Cycles:        136`
+`  GC Total Pause:   642.5 ms`
+`  File Descriptors: 3,804`
+
+`Checks`
+`  🔴 CPU:                 97.1%`
+`  ⚠️  Memory Growth:       178 MB/min`
+`  🔴 GC Pause:            642.5 ms`
+`  ⚠️  Goroutines:          5142`
+`  🔴 RPS Achievement:     6820 / 7000`
+`  ⚠️  Worker Utilization: 96.7%`
+
+`───────────────────────────────────────────────`
+`  🔴 GENERATOR SATURATED`
+`  Results may NOT be representative of target.`
+`───────────────────────────────────────────────`
+
+`Recommendations`
+`  • Reduce target RPS or use distributed mode`
+`  • Reduce concurrency to lower CPU pressure`
+`  • High GC pressure — reduce allocation rate or concurrency`
+
+Iska message yeh nahi **“Server definitely healthy hai.”** Iska message yeh hai **“Generator 10K RPS test ko trustworthy tareeke se execute nahi kar saka.”** Server conclusion ke liye ab either target ko lower karo generator scale out karo ya test setup refine karo
+
+Healthy report ke case mein bhi humility zaroori hai **“Generator healthy”** means generator side evidence says the workload was delivered without these detected pressure signals It does not magically prove every server side metric or every network hop is perfect
+
+***
+
+## 7. vs k6/vegeta question feature ka nahi focus ka hai
+
+k6 aur Vegeta dono mature aur useful load testing tools hain. Dono ka apna strong use case aur ecosystem hai. Generator ki health aur observability ko compare karte time ye bhi dekhna chahiye ki metrics, extensions, versions aur external monitoring integrations alag ho sakte hain. Teams in tools ke saath host level dashboards, container metrics, profiling aur cloud monitoring bhi use kar sakti hain
+
+Go-Storm ka main difference iska **built in generator health report** hai. Ye generator ki health ko test result ka important part banata hai. Requested vs achieved RPS, CPU, memory, GC, goroutines, FD usage aur worker utilization ko ek hi report mein combine karke Go-Storm batata hai ki test results **trustworthy hain, pressure mein hain, ya generator saturation ki wajah se results affect ho sakte hain**.
+
+| Question | Typical external observability workflow | go storm workflow |
+| --- | --- | --- |
+| Generator healthy tha? | Separate host dashboard/profile inspect karo | Post test health verdict dekho |
+| Target RPS actually hit hua? | Test output aur system charts correlate karo | RP achievement signal report mein |
+| Machine limit pehle pata chale | Manual benchmark/setup | `--estimate` pre-flight check |
+| Critical pressure par kya? | Manual alert/runbook | Health verdict; automatic-stop behaviour should be verified for the installed version |
+
+Yeh k6/vegeta ko baddeclare karne ki baat nahi. It is an engineering stance  when the tool is itself part of the experiment tool health should be visible inside the experiment’s result.
+
+***
+
+## 8. Whats next Health Report se Health Intelligence tak
+
+Current health monitoring ek strong starting point hai lekin yahi final goal nahi hai Future mein Go Storm ko aur useful banane ke liye kuch improvements kiye ja sakte hain
+
+- **Network monitoring:** Connection errors retransmits, network speed, port pressure aur DNS/TLS timing ko monitor karna
+- **Lock contention:** High concurrency mein locks ki wajah se program slow ho raha hai ya nahi ye detect karna.
+- **Time based health data:** Har second ka health data save karna, taaki short spikes final average mein hide na ho jaayein.
+- **Smart capacity planning:** Target RPS, payload, latency aur CPU usage ko dekhkar suggest karna ki kitne load generators ki zarurat hai.
+- **Distributed health:** Agar multiple load generators use ho rahe hain, toh har machine ki health alag track karna. Isse ek weak machine poore test ke results ko affect nahi karegi.
+- **Environment information:** Go version, CPU count, FD limit aur network information save karna, taaki different test runs ko fairly compare kiya ja sake.
+
+### Final point
+
+Load testing ka goal sirf ek bada graph dikhana nahi hai. Goal hai **trustworthy result dena**.
+
+Agar test bolta hai:
+
+> **"Your API fails at 10K RPS."**
+
+toh ek important question aur poochna chahiye:
+
+> **"Kya generator ne sach mein 10K RPS deliver kiya tha, aur kya generator khud healthy tha?"**
+
+**Go-Storm ka goal hai ki load testing ke time ye question ignore na ho.**
