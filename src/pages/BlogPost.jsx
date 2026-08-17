@@ -4,6 +4,8 @@ import { ArrowLeft, Calendar, Tag } from 'lucide-react'
 import { format } from 'date-fns'
 import { getPostBySlug } from '../lib/blog'
 import MDXComponents from '../components/blog/MDXComponents'
+import GiscusComments from '../components/blog/GiscusComments'
+import LikeButton from '../components/blog/LikeButton'
 
 export default function BlogPost() {
   const { slug } = useParams()
@@ -54,6 +56,7 @@ export default function BlogPost() {
                 {post.tags.join(', ')}
               </span>
             )}
+            <LikeButton slug={post.slug} />
           </div>
 
           {post.description && (
@@ -68,6 +71,8 @@ export default function BlogPost() {
             <post.component />
           </MDXProvider>
         </article>
+
+        <GiscusComments />
 
         <footer className="mt-16 pt-8 border-t border-border">
           <Link

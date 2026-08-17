@@ -12,16 +12,17 @@ const headingStyles = {
 function Code({ children, className, ...props }) {
   const match = /language-(\w+)/.exec(className || '')
   const code = String(children).replace(/\n$/, '')
+  const lang = match?.[1]
 
-  if (match) {
+  if (match && !['plain', 'text', 'txt', 'output'].includes(lang)) {
     return (
       <div className="my-6 rounded-lg overflow-hidden border border-border">
         <div className="flex items-center justify-between px-4 py-2 bg-[#1e1e2e] border-b border-white/5">
-          <span className="text-xs text-white/40 font-mono">{match[1]}</span>
+          <span className="text-xs text-white/40 font-mono">{lang}</span>
         </div>
         <SyntaxHighlighter
           style={oneDark}
-          language={match[1]}
+          language={lang}
           PreTag="div"
           customStyle={{
             margin: 0,
@@ -34,6 +35,19 @@ function Code({ children, className, ...props }) {
         >
           {code}
         </SyntaxHighlighter>
+      </div>
+    )
+  }
+
+  if (match) {
+    return (
+      <div className="my-6 rounded-lg overflow-hidden border border-border bg-[#1e1e2e]">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
+          <span className="text-xs text-white/40 font-mono">{lang}</span>
+        </div>
+        <pre className="overflow-x-auto p-6 text-sm leading-relaxed" style={{ margin: 0 }}>
+          <code className="font-mono text-white/80">{code}</code>
+        </pre>
       </div>
     )
   }
@@ -120,6 +134,16 @@ const components = {
       {children}
     </blockquote>
   ),
+  table: ({ children, ...props }) => (
+    <div className="my-6 overflow-x-auto rounded-lg border border-border">
+      <table className="w-full text-sm text-foreground/70" {...props}>{children}</table>
+    </div>
+  ),
+  thead: ({ children, ...props }) => <thead className="bg-secondary/60 border-b border-border" {...props}>{children}</thead>,
+  tbody: ({ children, ...props }) => <tbody className="divide-y divide-border" {...props}>{children}</tbody>,
+  tr: ({ children, ...props }) => <tr className="hover:bg-secondary/30 transition-colors" {...props}>{children}</tr>,
+  th: ({ children, ...props }) => <th className="px-4 py-3 text-left font-semibold text-foreground" {...props}>{children}</th>,
+  td: ({ children, ...props }) => <td className="px-4 py-3" {...props}>{children}</td>,
   code: Code,
   pre: Pre,
   img: Image,

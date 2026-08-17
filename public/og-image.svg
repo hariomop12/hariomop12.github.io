@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b372e"/>
+      <stop offset="100%" style="stop-color:#2d2a24"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="600" y="250" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="72" font-weight="bold" fill="#e8e4da">Hariom Virkhare</text>
+  <text x="600" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="32" fill="#c0762a">Backend Developer</text>
+  <text x="600" y="400" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="24" fill="rgba(232,228,218,0.5)">Go · Node.js · Distributed Systems</text>
+  <rect x="500" y="460" width="200" height="4" rx="2" fill="#c0762a"/>
+</svg>

@@ -14,7 +14,7 @@ Socho tumne Friday evening ek load test chalaya.
 
 Command simple tha:
 
-`storm run -u `[`https://api.example.com/orders`](https://api.example.com/orders)` -n 600000 -c 500 -r 10000`
+`storm run -u https://api.example.com/orders -n 600000 -c 500 -r 10000`
 
 Dashboard par result aaya: latency 2.8 seconds, error rate 12%, achieved throughput around 6,800 RPS. Team ka immediate conclusion hota hai: _"API 10K RPS handle nahi kar pa rahi."_
 
@@ -41,17 +41,17 @@ Tum **-r 10000** specify karte ho. Iska matlab intent hai 10,000 requests per se
 Result mein latency badh sakti hai. But us latency ka poora blame server ko dena galat hoga. Generator ke scheduling delays, client-side queues, connection creation pressure, aur resource starvation bhi observed numbers ko contaminate kar sakte hain.
 
 ```plain
-Requested workload                 What actually happened
-10,000 RPS  ───────────────►  generator hit 98% CPU
-                                      │
-                                      ▼
-                                only 6,800 RPS emitted
-                                      │
-                                      ▼
-                         server receives a different workload
-                                      │
-                                      ▼
-                     report says "server is slow" (maybe wrong)
+Requested workload                  What actually happened
+10,000 RPS  ---------------->  generator hit 98% CPU
+                                       |
+                                       v
+                                only 6,800 RPS emitted
+                                       |
+                                       v
+                            server receives a different workload
+                                       |
+                                       v
+                        report says "server is slow" (maybe wrong)
 ```
 
 Yahan important distinction hai:
@@ -84,7 +84,7 @@ Server ko 8K RPS mila hi nahi. Team ne server capacity nahi, laptop capacity mea
 
 Yeh kisi beginner ki mistake nahi hai Mature teams mein bhi hota hai especially jab “the tool finished successfully” ko “the test is valid” maan liya jaata hai. Successful exit code correctness ka proof nahi hota.
 
-go storm ka health report is ambiguity ko visible banata hai final result ke saath generator ka verdict bhi aata hai healthy under pressure ya saturated
+go-storm ka health report is ambiguity ko visible banata hai final result ke saath generator ka verdict bhi aata hai healthy under pressure ya saturated
 
 ***
 
@@ -125,50 +125,50 @@ Network saturation aur lock contention generator ke performance ko affect kar sa
 gostorm test run ke saath ek lightweight background monitor start karta hai Local run mein default sampling interval one second hai monitor test ke end par cleanly stop hota hai aur final health report build hoti hai
 
 ```plain
-                       ┌──────────────────────────────┐
-                         │          LOAD TEST         │
-                         │                           │
-                         │  Producer → Workers →       │
-                         │             Collector      │
-                         └──────────────┬───────────────┘
-                                       │
-                    ┌─────────────────--──┼───────────────---────┐
-                    │                   │                   │
-                    ▼                   ▼                   ▼
-          ┌─────────────────┐  ┌─────────────────┐    ┌────────────────┐
-          │ Runtime /      │  │ Test Statistics │    │   OS Limits   │
-          │ Process        │  │               │    │              │
-          │               │  │ Target RPS     │    │ Open FDs      │
-          │ • CPU          │  │ vs Achieved RPS│    │ Max FDs       │
-          │ • Heap         │  │               │    │              │
-          │ • GC           │  │ Worker Usage   │    │              │
-          │ • Goroutines    │  │               │    │              │
-          │ • FDs          │  │               │    │              │
-          └────────┬────────┘   └-────────┬───────┘   └─-─────┬────────┘
-                  │                    │                  │
-                  └──────────────────────────────────────------┘
-                                       │
-                                       ▼
-                         ┌──────────────────────-────┐
-                         │   THRESHOLD EVALUATOR    │
-                         │                        │
-                         │     OK / WARN / CRITICAL │
-                         └─────────────┬──────-──────┘
-                                       │
-                                       ▼
-                         ┌────────────────────────-──┐
-                         │  GENERATOR HEALTH REPORT │
-                         │                        │
-                         │  Actionable bottleneck   │
-                         │  & health information    │
-                         └──────────────────────────┘
+                       +------------------------------+
+                       |          LOAD TEST           |
+                       |                              |
+                       |  Producer -> Workers ->       |
+                       |              Collector       |
+                       +--------------+---------------+
+                                      |
+                    +-----------------+-----------------+
+                    |                 |                 |
+                    v                 v                 v
+          +-----------------+  +-----------------+  +----------------+
+          | Runtime /       |  | Test Statistics |  |   OS Limits    |
+          | Process         |  |                 |  |                |
+          |                 |  | Target RPS      |  | Open FDs       |
+          |  * CPU          |  | vs Achieved RPS |  | Max FDs        |
+          |  * Heap         |  |                 |  |                |
+          |  * GC           |  | Worker Usage    |  |                |
+          |  * Goroutines   |  |                 |  |                |
+          |  * FDs          |  |                 |  |                |
+          +--------+--------+  +--------+--------+  +-------+--------+
+                   |                    |                  |
+                   +------------------------------------------+
+                                      |
+                                      v
+                        +---------------------------+
+                        |   THRESHOLD EVALUATOR     |
+                        |                           |
+                        |    OK / WARN / CRITICAL   |
+                        +-------------+-------------+
+                                      |
+                                      v
+                        +---------------------------+
+                        |  GENERATOR HEALTH REPORT  |
+                        |                           |
+                        |  Actionable bottleneck    |
+                        |  & health information     |
+                        +---------------------------+
 ```
 
-1. **CPU usage** Linux mein process kitna CPU use kar raha hai, ye \*\*`/proc/self/stat`\*\* se measure hota hai.
+1. **CPU usage** Linux mein process kitna CPU use kar raha hai, ye **`/proc/self/stat`** se measure hota hai.
 2. **Memory growth rate** Time ke saath memory kitni fast badh rahi hai, ye check karke excessive memory usage ka signal milta hai.
 3. **GC pause** Go ka Garbage Collector kitna time program ko pause kar raha hai, ye runtime ke GC data se measure hota hai.
 4. **Goroutine count** Kitni goroutines chal rahi hain, ye runtime se count karke configured concurrency ke comparison mein check hota hai.
-5. **File descriptor usage** Linux mein kitne file descriptors use ho rahe hain, ye \*\*`/proc/self/fd`\*\* aur OS ki maximum FD limit ke comparison se check hota hai.
+5. **File descriptor usage** Linux mein kitne file descriptors use ho rahe hain, ye **`/proc/self/fd`** aur OS ki maximum FD limit ke comparison se check hota hai.
 6. **RPS achievement** Actual RPS target RPS ke kitna close hai, ye check kiya jaata hai.
 7. **Worker utilization** Workers available time ka kitna part requests handle karne mein busy rahe, iska estimate nikala jaata hai.
 
@@ -184,46 +184,50 @@ Idea punishment nahi honesty hai Agar generator incapable hai tool ko signal den
 
 Best time to discover that one laptop cannot generate desired load is **before** the production like test not after an incident review
 
-`--estimate` go storm ko ek short pre test benchmark chalane bolta hai It samples a small high concurrency workload and reports estimated maximum RPS average latency success rate CPU memory, goroutines, aur GC cycles observed during that check
+`--estimate` go-storm ko ek short pre test benchmark chalane bolta hai It samples a small high concurrency workload and reports estimated maximum RPS average latency success rate CPU memory, goroutines, aur GC cycles observed during that check
 
-`storm run `\
-`         -u https://staging.example.com/checkout  `\
-`         -n 300000 -c 300 -r 10000  `\
-`        --estimate`
+```bash
+storm run \
+  -u https://staging.example.com/checkout \
+  -n 300000 -c 300 -r 10000 \
+  --estimate
+```
 
-`CAPACITY ESTIMATION REPORT`
+```
+CAPACITY ESTIMATION REPORT
 
-`Quick Benchmark Results`
-`  Sample Size:       200 requests`
-`  Max RPS:           7,400`
-`  Avg Latency:       41ms`
-`  Success Rate:      100.0%`
+Quick Benchmark Results
+  Sample Size:       200 requests
+  Max RPS:           7,400
+  Avg Latency:       41ms
+  Success Rate:      100.0%
 
-`System at Load`
-`  CPU:               88.2%`
-`  Memory:            322.5 MB`
-`  Goroutines:        307`
-`  GC Cycles:         9`
+System at Load
+  CPU:               88.2%
+  Memory:            322.5 MB
+  Goroutines:        307
+  GC Cycles:         9
 
-`  Target: 10,000 RPS  ❌ NOT ACHIEVABLE`
-`  (Your machine can handle ~7,400 RPS)`
+  Target: 10,000 RPS  ❌ NOT ACHIEVABLE
+  (Your machine can handle ~7,400 RPS)
 
-`  Recommendation:`
-`  • Use distributed mode: storm run-dist --agents 2`
-`  • Or reduce target: storm run -n 6660`
+  Recommendation:
+  • Use distributed mode: storm run-dist --agents 2
+  • Or reduce target: storm run -n 6660
+```
 
 Is output ko exact universal hardware benchmark mat samjho Target latency, TLS, payload size, response body, network path aur test configuration capacity change kar dete hain. Treat it as a practical pre flight signal: “is setup par yeh target risky hai kya?”
 
 ```plain
 Before test
-   │
-   ├── Capacity estimate healthy ──► run single generator with confidence
-   │
-   └── Capacity estimate tight/not achievable
-              │
-              ├── lower target RPS
-              ├── tune concurrency / payload / connections
-              └── distribute load across agents
+    |
+    +-- Capacity estimate healthy --> run single generator with confidence
+    |
+    +-- Capacity estimate tight/not achievable
+                |
+                +-- lower target RPS
+                +-- tune concurrency / payload / connections
+                +-- distribute load across agents
 ```
 
 ***
@@ -232,37 +236,39 @@ Before test
 
 Test ke end par normal result ke baad health report print hoti hai when saturation monitoring enabled hai (default enabled)
 
-`GENERATOR HEALTH REPORT`
+```
+GENERATOR HEALTH REPORT
 
-`Load`
-`  Target RPS:       10,000`
-`  Achieved RPS:     6,820  🔴 (68%)`
+Load
+  Target RPS:       10,000
+  Achieved RPS:     6,820  🔴 (68%)
 
-`System Resources`
-`  CPU Usage:        97.1% 🔴`
-`  Memory:           844.6 MB (Heap: 516.2 MB)`
-`  Goroutines:       5,142`
-`  GC Cycles:        136`
-`  GC Total Pause:   642.5 ms`
-`  File Descriptors: 3,804`
+System Resources
+  CPU Usage:        97.1% 🔴
+  Memory:           844.6 MB (Heap: 516.2 MB)
+  Goroutines:       5,142
+  GC Cycles:        136
+  GC Total Pause:   642.5 ms
+  File Descriptors: 3,804
 
-`Checks`
-`  🔴 CPU:                 97.1%`
-`  ⚠️  Memory Growth:       178 MB/min`
-`  🔴 GC Pause:            642.5 ms`
-`  ⚠️  Goroutines:          5142`
-`  🔴 RPS Achievement:     6820 / 7000`
-`  ⚠️  Worker Utilization: 96.7%`
+Checks
+  🔴 CPU:                  97.1%
+  ⚠️  Memory Growth:        178 MB/min
+  🔴 GC Pause:             642.5 ms
+  ⚠️  Goroutines:           5142
+  🔴 RPS Achievement:      6820 / 7000
+  ⚠️  Worker Utilization:   96.7%
 
-`───────────────────────────────────────────────`
-`  🔴 GENERATOR SATURATED`
-`  Results may NOT be representative of target.`
-`───────────────────────────────────────────────`
+───────────────────────────────────────────────
+  🔴 GENERATOR SATURATED
+  Results may NOT be representative of target.
+───────────────────────────────────────────────
 
-`Recommendations`
-`  • Reduce target RPS or use distributed mode`
-`  • Reduce concurrency to lower CPU pressure`
-`  • High GC pressure — reduce allocation rate or concurrency`
+Recommendations
+  • Reduce target RPS or use distributed mode
+  • Reduce concurrency to lower CPU pressure
+  • High GC pressure — reduce allocation rate or concurrency
+```
 
 Iska message yeh nahi **“Server definitely healthy hai.”** Iska message yeh hai **“Generator 10K RPS test ko trustworthy tareeke se execute nahi kar saka.”** Server conclusion ke liye ab either target ko lower karo generator scale out karo ya test setup refine karo
 
