@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Calendar, ArrowRight } from 'lucide-react'
+import { Calendar, Clock, ArrowRight } from 'lucide-react'
 import { format } from 'date-fns'
 
 export default function PostCard({ post }) {
@@ -15,6 +15,12 @@ export default function PostCard({ post }) {
               <Calendar size={12} />
               {format(post.date, 'MMM d, yyyy')}
             </span>
+            {post.readingTime && (
+              <span className="flex items-center gap-1.5">
+                <Clock size={12} />
+                {post.readingTime} min read
+              </span>
+            )}
           </div>
           <ArrowRight
             size={16}

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Hariom Virkhare - Blog</title>
+    <link>https://hariomop12.github.io/blog</link>
+    <description>Blog posts on backend engineering by Hariom Virkhare</description>
+    <language>en</language>
+    <atom:link href="https://hariomop12.github.io/rss.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title><![CDATA[Why Your Load Test Results Might Be Wrong]]></title>
+      <link>https://hariomop12.github.io/blog/why-your-load-test-results-might-be-wrong</link>
+      <pubDate>Mon, 17 Aug 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[Load test ka result hamesha target server ki reality nahi batata kabhi kabhi load generator khud bottleneck ban chuka hota hai ess blog mein dekho kaise go storm CPU, GC, goroutines, FD usage aur actual RPS track karke misleading test results detect karta hai]]></description>
+    </item>
+    <item>
+      <title><![CDATA[From Curiosity to Go-Storm Why I Built My Own HTTP Load Tester]]></title>
+      <link>https://hariomop12.github.io/blog/from-curiosity-to-go-storm-why-i-built-my-own-http-load-tester</link>
+      <pubDate>Wed, 12 Aug 2026 00:00:00 GMT</pubDate>
+      <description><![CDATA[It all started with a simple curiosity  how much load can I actually generate using Go's goroutines and channels? I started experimenting with it, and that small experiment slowly turned into Go-Storm, an HTTP load testing tool.]]></description>
+    </item>
+    <item>
+      <title><![CDATA[How i build production ready backend in node js]]></title>
+      <link>https://hariomop12.github.io/blog/How-I-Built-a-Production-Ready-Backend-in-Node.js</link>
+      <pubDate>Wed, 25 Mar 2026 18:30:00 GMT</pubDate>
+      <description><![CDATA[A deep dive into building enterprise grade APIs with TypeScript, PostgreSQLm Prisma, and Docker.]]></description>
+    </item>
+    <item>
+      <title><![CDATA[Node.js Error Handling Patterns]]></title>
+      <link>https://hariomop12.github.io/blog/nodejs-error-handling</link>
+      <pubDate>Fri, 19 Jan 2024 18:30:00 GMT</pubDate>
+      <description><![CDATA[Master error handling in Node.js with async/await, custom error classes, and middleware patterns.]]></description>
+    </item>
+  </channel>
+</rss>

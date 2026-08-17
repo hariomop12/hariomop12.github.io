@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom'
 import { MDXProvider } from '@mdx-js/react'
-import { ArrowLeft, Calendar, Tag } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, Tag } from 'lucide-react'
 import { format } from 'date-fns'
 import { getPostBySlug } from '../lib/blog'
 import MDXComponents from '../components/blog/MDXComponents'
@@ -50,6 +50,12 @@ export default function BlogPost() {
               <Calendar size={14} />
               {format(post.date, 'MMMM d, yyyy')}
             </span>
+            {post.readingTime && (
+              <span className="flex items-center gap-1.5">
+                <Clock size={14} />
+                {post.readingTime} min read
+              </span>
+            )}
             {post.tags && post.tags.length > 0 && (
               <span className="flex items-center gap-1.5">
                 <Tag size={14} />

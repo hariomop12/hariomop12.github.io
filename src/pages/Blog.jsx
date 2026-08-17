@@ -1,10 +1,19 @@
-import { PenLine } from 'lucide-react'
+import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { PenLine, X } from 'lucide-react'
 import { getAllPosts, getAllTags } from '../lib/blog'
 import PostCard from '../components/blog/PostCard'
+import { cn } from '../lib/utils'
 
 export default function Blog() {
-  const posts = getAllPosts()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeTag = searchParams.get('tag')
+  const allPosts = getAllPosts()
   const tags = getAllTags()
+
+  const posts = activeTag
+    ? allPosts.filter((p) => p.tags?.some((t) => t === activeTag))
+    : allPosts
 
   return (
     <section className="min-h-[calc(100vh-80px)] py-16 md:py-20">
@@ -22,14 +31,44 @@ export default function Blog() {
 
         {tags.length > 0 && (
           <div className="flex items-center gap-2 mb-8 flex-wrap">
+            <button
+              onClick={() => setSearchParams({})}
+              className={cn(
+                'px-2.5 py-1 text-xs rounded border transition-colors',
+                !activeTag
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-secondary text-foreground/60 border-transparent hover:border-border'
+              )}
+            >
+              All
+            </button>
             {tags.map((tag) => (
-              <span
+              <button
                 key={tag}
-                className="px-2.5 py-1 text-xs rounded bg-secondary text-foreground/60"
+                onClick={() => setSearchParams({ tag })}
+                className={cn(
+                  'px-2.5 py-1 text-xs rounded border transition-colors',
+                  activeTag === tag
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-secondary text-foreground/60 border-transparent hover:border-border'
+                )}
               >
                 {tag}
-              </span>
+              </button>
             ))}
+          </div>
+        )}
+
+        {activeTag && (
+          <div className="flex items-center gap-2 mb-6 text-sm text-foreground/60">
+            <span>Filtered by</span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">
+              {activeTag}
+              <button onClick={() => setSearchParams({})} className="hover:text-foreground">
+                <X size={12} />
+              </button>
+            </span>
+            <span>({posts.length} posts)</span>
           </div>
         )}
 
@@ -37,9 +76,13 @@ export default function Blog() {
           {posts.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-foreground/50 text-sm">
-                No posts yet. Drop an MDX file in{' '}
-                <code className="text-primary">src/content/blogs/</code> to get
-                started.
+                {activeTag
+                  ? `No posts found with tag "${activeTag}".`
+                  : 'No posts yet. Drop an MDX file in '}
+                {!activeTag && (
+                  <code className="text-primary">src/content/blogs/</code>
+                )}
+                {!activeTag && ' to get started.'}
               </p>
             </div>
           ) : (
