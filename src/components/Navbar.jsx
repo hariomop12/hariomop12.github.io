@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Sun, Moon, Menu, X } from "lucide-react";
-import { useTheme } from "./ThemeProvider";
+import { Menu, X } from "lucide-react";
+import ThemePicker from "./ThemePicker";
 import { cn } from "../lib/utils";
 
 const NAV_LINKS = [
@@ -13,7 +13,6 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
-  const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -48,23 +47,11 @@ export default function Navbar() {
           </nav>
 
           <div className="hidden md:flex items-center">
-            <button
-              onClick={toggleTheme}
-              className="w-9 h-9 rounded-md flex items-center justify-center text-foreground/60 hover:text-foreground border border-border hover:border-primary transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
+            <ThemePicker />
           </div>
 
           <div className="flex md:hidden items-center gap-2">
-            <button
-              onClick={toggleTheme}
-              className="w-9 h-9 rounded-md flex items-center justify-center text-foreground/60 hover:text-foreground border border-border transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
+            <ThemePicker />
             <button
               onClick={() => setMenuOpen((prev) => !prev)}
               className="w-9 h-9 rounded-md flex items-center justify-center text-foreground/60 hover:text-foreground border border-border transition-colors"
