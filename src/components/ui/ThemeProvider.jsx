@@ -14,7 +14,19 @@ function applyThemeVars(themeData, mode) {
   if (!colors) return;
 
   Object.entries(colors).forEach(([key, value]) => {
-    root.style.setProperty(`--${key}`, value);
+    if (key === "radius") {
+      root.style.setProperty(`--radius`, value);
+    } else if (key === "font-sans") {
+      root.style.setProperty(`--font-sans`, value);
+    } else if (key === "font-mono") {
+      root.style.setProperty(`--font-mono`, value);
+    } else if (key.startsWith("chart-")) {
+      root.style.setProperty(`--${key}`, value);
+    } else if (key.startsWith("sidebar-")) {
+      root.style.setProperty(`--${key}`, value);
+    } else {
+      root.style.setProperty(`--${key}`, value);
+    }
   });
 }
 
@@ -43,14 +55,16 @@ export function ThemeProvider({ children, defaultTheme = "dark" }) {
     const root = document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(mode);
+    root.setAttribute("data-theme", themeId);
     localStorage.setItem("portfolio-mode", mode);
+    localStorage.setItem("portfolio-theme-id", themeId);
 
     applyThemeVars(themeData, mode);
 
     return () => {
       removeThemeVars(themeData, mode);
     };
-  }, [mode, themeData]);
+  }, [mode, themeData, themeId]);
 
   const toggleTheme = useCallback(() => {
     setMode((prev) => (prev === "dark" ? "light" : "dark"));

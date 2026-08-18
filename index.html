@@ -14,8 +14,10 @@
   <meta name="theme-color" content="#3b372e" />
   <script>
     (function () {
-      var theme = localStorage.getItem("portfolio-theme") || "dark";
-      document.documentElement.classList.add(theme);
+      var mode = localStorage.getItem("portfolio-mode") || "dark";
+      var themeId = localStorage.getItem("portfolio-theme-id") || "notion";
+      document.documentElement.classList.add(mode);
+      document.documentElement.setAttribute("data-theme", themeId);
     })();
   </script>
 

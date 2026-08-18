@@ -14,8 +14,10 @@
   <meta name="theme-color" content="#3b372e" />
   <script>
     (function () {
-      var theme = localStorage.getItem("portfolio-theme") || "dark";
-      document.documentElement.classList.add(theme);
+      var mode = localStorage.getItem("portfolio-mode") || "dark";
+      var themeId = localStorage.getItem("portfolio-theme-id") || "notion";
+      document.documentElement.classList.add(mode);
+      document.documentElement.setAttribute("data-theme", themeId);
     })();
   </script>
 
@@ -54,8 +56,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
-  <script type="module" crossorigin src="/assets/index-DjosDaQc.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CvZrpVg1.css">
+  <script type="module" crossorigin src="/assets/index-DPNMFhon.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DQ-uGM65.css">
 </head>
 
 <body>
