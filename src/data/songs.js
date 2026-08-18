@@ -1,4 +1,5 @@
 export const SONGS = [
+  { id: "kHq1zNTnPSY", title: "Maine Khud Ko" },
   { id: "3T8nIOZmx50", title: "Aashiq Banaya Aapne" },
   { id: "-uqZlkSoEZU", title: "Baby Doll" },
   { id: "mFdIMZk6UHI", title: "Tere Liye (Jhankar)" },
