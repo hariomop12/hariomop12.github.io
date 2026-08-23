@@ -1,8 +1,9 @@
 export const SONGS = [
+  { id: "5RT6QMKJTjQ", title: "Ishq Sufiyana Lyrical | The Dirty Picture | Emraan Hashmi,Vidya Balan | Vishal - Shekhar" },
   { id: "kHq1zNTnPSY", title: "Maine Khud Ko" },
-  { id: "3T8nIOZmx50", title: "Aashiq Banaya Aapne" },
   { id: "-uqZlkSoEZU", title: "Baby Doll" },
   { id: "mFdIMZk6UHI", title: "Tere Liye (Jhankar)" },
+  { id: "3T8nIOZmx50", title: "Aashiq Banaya Aapne" },
   { id: "AWCifvH9fXQ", title: "SHEILA KI JAWANI" },
   { id: "QCc6Vo8_gKU", title: "Fevicol Se" },
   { id: "cgDe9D4BQTk", title: "Bom Diggy Diggy (From \"Sonu Ke Titu Ki Sweety\")" },
