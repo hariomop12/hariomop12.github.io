@@ -21,4 +21,5 @@ export const SONGS = [
   { id: "geHlQWu70qY", title: "Sajna, Say Yes To The Dress" },
   { id: "mNtkT-8MmbY", title: "Teri Chunnariya (8D AUDIO) - Hello Brother | Salman Khan, Rani Mukherjee | Kumar S, Alka Y | HQ" },
   { id: "NOhgBESRMR8", title: "10 Piercings - AJRUSTED | OFFICIAL MUSIC VIDEO " },
+  { id: "Oy9FJVgrlb0", title: "Badnam" },
 ];
